@@ -496,7 +496,7 @@ showFramework() {
   }
 ```
 
-[Reactive Forms](https://angular.dev/tutorials/learn-angular/17-reactive-forms)
+# [Reactive Forms](https://angular.dev/tutorials/learn-angular/17-reactive-forms)
 
 ```ts
 import {Component} from '@angular/core';
@@ -530,7 +530,7 @@ export class AppComponent {
 }
 ```
 
-[Validating forms](https://angular.dev/tutorials/learn-angular/18-forms-validation)
+# [Validating forms](https://angular.dev/tutorials/learn-angular/18-forms-validation)
 
 ```ts
 import {Component} from '@angular/core';
@@ -633,7 +633,7 @@ export class AppComponent {
 ```
 
 
-[Creating an injectable service](https://angular.dev/tutorials/learn-angular/19-creating-an-injectable-service)
+# [Creating an injectable service](https://angular.dev/tutorials/learn-angular/19-creating-an-injectable-service)
 
 L'iniezione delle dipendenze (Dependency Injection, DI) è un design pattern che consente di ottenere le risorse di cui un componente o servizio ha bisogno senza che questi debbano crearsele da soli. 
 Considera l'iniezione delle dipendenze come la capacità di Angular di fornire le risorse di cui hai bisogno per la tua applicazione durante l'esecuzione. Una dipendenza potrebbe essere un servizio o altre risorse (una get, una post, etc.).
@@ -673,7 +673,7 @@ export class AppComponent {
 ```
 
 
-[Inject-based dependency injection](https://angular.dev/tutorials/learn-angular/20-inject-based-di)
+# [Inject-based dependency injection](https://angular.dev/tutorials/learn-angular/20-inject-based-di)
 
 ```ts
 import {Component, inject} from '@angular/core';
@@ -712,7 +712,7 @@ export class AppComponent {
 ```
 
 
-[Constructor-based dependency injection](https://angular.dev/tutorials/learn-angular/21-constructor-based-di)
+# [Constructor-based dependency injection](https://angular.dev/tutorials/learn-angular/21-constructor-based-di)
 
 Per iniettare un servizio o altre risorse nel componente, puoi usare un costruttore.
 Il costruttore è il punto di ingresso in cui Angular inietta le dipendenze. Quando un componente viene creato, Angular analizza i parametri del costruttore e si occupa di passare automaticamente le dipendenze necessarie (in questo caso, il servizio PetCareService) al costruttore del componente.
@@ -735,7 +735,7 @@ export class PetCarDashboardComponent {
  - Il petCareService diventa una proprietà che puoi utilizzare nella tua classe
  - La classe PetCareService è la classe iniettata
 
-[Pipes](https://angular.dev/tutorials/learn-angular/22-pipes)
+# [Pipes](https://angular.dev/tutorials/learn-angular/22-pipes)
 I pipe vengono utilizzati per modificare e formattare i dati in modo che vengano visualizzati nel formato desiderato, senza doverli modificare direttamente nel codice della logica del componente, ma solo tramite il pipe `|`.
 
 ```ts
@@ -753,7 +753,7 @@ export class AppComponent {
 ```
 
 
-[Formatting data with pipes](https://angular.dev/tutorials/learn-angular/23-pipes-format-data)
+# [Formatting data with pipes](https://angular.dev/tutorials/learn-angular/23-pipes-format-data)
 
 Esempio di formattazione con pipes:
 ```ts
@@ -778,7 +778,7 @@ export class AppComponent {
 }
 ```
 
-[Create a custom pipe](https://angular.dev/tutorials/learn-angular/24-create-a-pipe)
+# [Create a custom pipe](https://angular.dev/tutorials/learn-angular/24-create-a-pipe)
 
 un pipe è semplicemente una classe TypeScript con il decoratore `@Pipe`:
 ```ts
