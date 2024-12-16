@@ -1,7 +1,5 @@
-# ASP.NET Core MVC
+# [ASP.NET Core MVC](https://learn.microsoft.com/it-it/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-9.0&tabs=visual-studio)
 ## aggiungere un controller a un'app MVC core ASP.NET
-
-[text](https://learn.microsoft.com/it-it/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-9.0&tabs=visual-studio)
 
 In ASP.NET Core, View è una rappresentazione visiva (tipicamente una pagina HTML) che viene renderizzata e restituita al client come risposta a una richiesta HTTP. Quando un metodo del controller restituisce View(), il framework cerca una vista corrispondente nel progetto (di solito un file .cshtml) e la restituisce come contenuto HTML.
 
