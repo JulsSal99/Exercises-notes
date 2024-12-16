@@ -14,6 +14,8 @@ import {Component} from '@angular/core';
   template: `
     Hello Universe
   `,
+  // o alternativamente 
+  // templateUrl: './notes-list.component.html',
   styles: `
     :host {
       color: #a144eb;
@@ -109,6 +111,28 @@ export class AppComponent {
 
 # [Control Flow in Components - `@for`](https://angular.dev/tutorials/learn-angular/5-control-flow-for)
 In un ciclo `@for`, l'attributo `track` viene utilizzato per indicare una chiave unica per ogni elemento, in modo che Angular possa identificare, aggiungere, rimuovere o aggiornare gli elementi in modo ottimale durante i cambiamenti dello stato.
+
+```ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <p>
+    
+    @for (item of items; track $index) {
+      {{ item }}
+    }
+    </p>
+  `,
+})
+export class AppComponent {
+  items = [1, 2, 3, 4];
+}
+```
+
+
+
 ```ts
 import {Component} from '@angular/core';
 
@@ -129,6 +153,55 @@ export class AppComponent {
 }
 ```
 In questo modo, quando l'elenco di users cambia (ad esempio, un utente viene aggiunto o rimosso), Angular può aggiornare solo gli elementi modificati, piuttosto che ricreare l'intero elenco, migliorando le prestazioni.
+
+# Listing Notes
+
+E' possibile definire elementi esterni:
+```ts
+//notes.ts
+export interface Note {
+  id: number;
+  title: string;
+  text: string;
+}
+export const NOTES: Note[] = [
+  {
+    id: 1,
+    title: 'Lorem ipsum',
+    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+  },
+  {
+    id: 2,
+    title: 'Shakespeare',
+    text: 'To be, or not to be: that is the question.',
+  },
+];
+```
+
+```ts
+//notes-list/notes-list.component.ts
+import { Component } from '@angular/core';
+import { NOTES } from '../notes';
+
+@Component({
+  selector: 'app-notes-list',
+  standalone: true,
+  template: `
+  @for (note of notes; track $index) {
+  <span class="note-title">{{ note.title }}</span>
+  <span class="note-text">{{ note.text }}</span>
+  }
+  `,
+  styleUrl: './notes-list.component.css',
+})
+export class NotesListComponent {
+  notes = NOTES;
+
+  show(title: string) {
+    alert(title);
+  }
+}
+```
 
 # [Property Binding in Angular](https://angular.dev/tutorials/learn-angular/6-property-binding)
 
@@ -178,7 +251,240 @@ export class AppComponent {
 }
 ```
 
+```ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <p [class.red]="isRed">some text for our page</p>
+    <button (click)="change()">
+      Switch Background Color
+    </button>
+  `,
+})
+export class AppComponent {
+  isRed = false;
+
+  change() {
+    this.isRed = !this.isRed;
+  }
+}
+```
+
 # [Component Communication with `@Input`](https://angular.dev/tutorials/learn-angular/8-input)
+Per l'invio di dati a un componente angular usa l'`@Input()`. 
+Questi dati possono essere utilizzati per inviare informazioni da un componente genitore a un componente figlio.
+
+Per creare una proprietà Input, aggiungi il decoratore `@Input` a una proprietà della classe del componente:
+
+```ts
+user.component.ts
+class UserComponent {
+  @Input() occupation = '';
+}
+```
+e per passare i valori:
+
+```ts
+@Component({
+  ...
+  template: `<app-user occupation="Angular Developer"></app-user>`
+})
+class AppComponent {}
+```
+
+# [Component Communication with `@Output`](https://angular.dev/tutorials/learn-angular/9-output)
+
+Angular usa `@Output` per notificare altri componenti che qualcosa è cambiato.
+
+```ts
+import {Component, Output, EventEmitter} from '@angular/core';
+
+@Component({
+  selector: 'app-child',
+  styles: `.btn { padding: 5px; }`,
+  template: `
+    <button class="btn" (click)="addItem()" >Add Item</button>
+  `,
+})
+export class ChildComponent {
+  addItem() {
+    this.addItemEvent.emit('🐢');
+  };
+  @Output() addItemEvent = new EventEmitter<string>();
+  
+}
+```
+
+```ts
+import {Component} from '@angular/core';
+import {ChildComponent} from './child.component';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <app-child (addItemEvent)="addItem($event)" />
+    <p>🐢 all the way down {{ items.length }}</p>
+  `,
+  imports: [ChildComponent],
+})
+export class AppComponent {
+  items = new Array();
+
+  addItem(item: string) {
+    this.items.push(item);
+  }
+}
+```
+
+# [Deferrable Views](https://angular.dev/tutorials/learn-angular/10-deferrable-views)
+
+
+- `@defer (on viewport) { <comments /> }` : carica il componente quando il browser è in idle.
+Questa parte indica che i commenti devono essere caricati solo quando sono visibili nel viewport (ovvero quando l'utente scorre e i commenti appaiono sullo schermo). 
+- `@placeholder { <p>Future comments</p> }` : definisce un segnaposto (placeholder) che viene mostrato prima che i commenti veri e propri siano caricati.
+- `@loading (minimum 2s) { <p>Loading comments...</p> }` : quando i commenti sono in fase di caricamento, viene mostrato un messaggio di caricamento. 
+
+# [Optimizing images](https://angular.dev/tutorials/learn-angular/11-optimizing-images)
+Per gestire l'ottimizzazione delle immagini:
+
+```ts
+import { NgOptimizedImage } from '@angular/common';
+@Component({
+    template: `
+  ...
+    <img ngSrc="www.example.com/image.png" height="600" width="800" priority />
+    <img ngSrc="www.example.com/image.png" fill /> `
+  ...
+    imports: [NgOptimizedImage],
+  ...
+})
+```
+
+# [Routing Overview](https://angular.dev/tutorials/learn-angular/12-enable-routing)
+
+```ts
+//app.routes.ts
+import {Routes} from '@angular/router';
+
+export const routes: Routes = [];
+```
+
+```ts
+//app.component.ts
+import {Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <nav>
+      <a href="/">Home</a>
+      |
+      <a href="/user">User</a>
+    </nav>
+    <router-outlet />
+  `,
+  imports: [RouterOutlet],
+})
+export class AppComponent {}
+```
+
+```ts
+//app.config.ts
+import {ApplicationConfig} from '@angular/core';
+import {provideRouter} from '@angular/router';
+
+import {routes} from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideRouter(routes)],
+};
+```
+
+
+# [Define a Route](https://angular.dev/tutorials/learn-angular/13-define-a-route)
+
+Per definire delle routes, dichiarare in app.routes.ts nei due import le due pagine usate.
+
+```ts
+//app.routes.ts
+import {Routes} from '@angular/router';
+
+import {HomeComponent} from './home/home.component';
+import {UserComponent} from './user/user.component';
+
+export const routes: Routes = [
+  {
+    path: '',
+    title: 'App Home Page',
+    component: HomeComponent,
+  },
+  {
+    path: 'user',
+    title: 'App User Page',
+    component: UserComponent,
+  },
+];
+```
+
+```ts
+import {Component} from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <div>Home Page</div>
+  `,
+})
+export class HomeComponent {}
+```
+
+
+## [Use RouterLink for Navigation](https://angular.dev/tutorials/learn-angular/14-routerLink)
+
+RouterLink viene usato per specificare la rotta a cui navigare. È simile all'attributo href di un tag <a>, ma invece di causare un ricaricamento completo della pagina, sfrutta la logica di routing interna di Angular per aggiornare solo la vista.
+
+```ts
+import { RouterLink, RouterOutlet } from '@angular/router';
+@Component({
+  ...
+  template: `
+    ...
+    <a routerLink="/">Home</a>
+    <a routerLink="/user">User</a>
+    ...
+  `,
+  imports: [RouterLink, RouterOutlet],
+})
+```
+
+# [Forms Overview](https://angular.dev/tutorials/learn-angular/15-forms)
+
+Per creare un form di input
+
+```ts
+import {Component} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+
+@Component({
+  selector: 'app-user',
+  template: `
+    <label for="framework">
+      Favorite Framework:
+      <input id="framework" type="text" [(ngModel)]="favoriteFramework" />
+    </label>
+  `,
+  imports: [FormsModule],
+})
+export class UserComponent {
+  favoriteFramework = '';
+}
+
+```
+
+# [Getting form control value](https://angular.dev/tutorials/learn-angular/16-form-control-values)
 
 ```ts
 
@@ -189,15 +495,6 @@ export class AppComponent {
 
 ```
 
-
-```ts
-
-```
-
-
-```ts
-
-```
 
 ```ts
 
