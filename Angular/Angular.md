@@ -486,31 +486,337 @@ export class UserComponent {
 
 # [Getting form control value](https://angular.dev/tutorials/learn-angular/16-form-control-values)
 
-```ts
+Quando hai bisogno di fare riferimento al valore del campo di input nella classe del componente, puoi farlo accedendo alla proprietà della classe con la sintassi this.
 
+```ts
+<button (click)="showFramework()">Show Framework</button>
+[...]
+showFramework() {
+    alert(this.favoriteFramework);
+  }
+```
+
+[Reactive Forms](https://angular.dev/tutorials/learn-angular/17-reactive-forms)
+
+```ts
+import {Component} from '@angular/core';
+import {FormGroup, FormControl} from '@angular/forms';
+import {ReactiveFormsModule} from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <form [formGroup]="profileForm" (ngSubmit)="handleSubmit()">
+      <input type="text" formControlName="name" />
+      <input type="email" formControlName="email" />
+      <button type="submit">Submit</button>
+    </form>
+
+    <h2>Profile Form</h2>
+    <p>Name: {{ profileForm.value.name }}</p>
+    <p>Email: {{ profileForm.value.email }}</p>
+  `,
+  imports: [ReactiveFormsModule],
+})
+export class AppComponent {
+  profileForm = new FormGroup({
+    name: new FormControl(''),
+    email: new FormControl(''),
+  });
+
+  handleSubmit() {
+    alert(this.profileForm.value.name + ' | ' + this.profileForm.value.email);
+  }
+}
+```
+
+[Validating forms](https://angular.dev/tutorials/learn-angular/18-forms-validation)
+
+```ts
+import {Component} from '@angular/core';
+import {FormGroup, FormControl} from '@angular/forms';
+import {ReactiveFormsModule, Validators} from '@angular/forms';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <form [formGroup]="profileForm">
+      <input type="text" formControlName="name" name="name" />
+      <input type="email" formControlName="email" name="email" />
+      <button type="submit" [disabled]="!profileForm.valid" (ngSubmit)="login()">Submit</button>
+    </form>
+  `,
+  imports: [ReactiveFormsModule],
+})
+export class AppComponent {
+  profileForm = new FormGroup({
+    name: new FormControl('Juls', Validators.required),
+    email: new FormControl('', [Validators.required, Validators.email]),
+  });
+  login() {
+    alert(
+      this.profileForm.value.name +
+      ' | ' + 
+      this.profileForm.value.email
+    );
+  }
+}
+
+```
+
+Esiste anche il tasto **reset**:
+```ts
+<form [formGroup]="myForm">
+...
+<input type="button"
+value="Reset"
+(click) = "myForm.reset()" />
+```
+
+
+Un'altro metodo è usare :
+
+```ts
+<form (ngSubmit)="showName()" #myForm="ngForm">
+  <input type="text" [(ngModel)]="name" name="name" required />
+  <input type="submit" value="Submit" [disabled]="!myForm.form.valid" />
+</form>
+```
+
+Angular ha delle specifiche classi per gli input validi e invalidi:
+
+```ts
+/* Add application styles & imports to this file! */
+input.ng-valid {
+  background-color: #79ba6a;
+}
+input.ng-invalid {
+  background-color: #f58c84;
+}
+```
+
+
+
+Esempio di validazione con risposta visiva:
+
+```ts
+import {Component} from '@angular/core';
+import {FormGroup, FormControl} from '@angular/forms';
+import {ReactiveFormsModule, Validators} from '@angular/forms';
+import { CommonModule } from '@angular/common'; // Importa CommonModule
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <form [formGroup]="profileForm">
+      <input type="text" formControlName="name" name="name" />
+      <input type="email" formControlName="email" name="email" (blur)="onBlur()"/>
+      
+      <button type="submit" [disabled]="!profileForm.valid">Submit</button>
+      <div *ngIf="profileForm.controls['email'].touched && profileForm.controls['email'].invalid">
+          <small style="color: red;">Email errata</small>
+        </div>
+    </form>
+  `,
+  imports: [ReactiveFormsModule, CommonModule],
+})
+export class AppComponent {
+  profileForm = new FormGroup({
+    name: new FormControl('', Validators.required),
+    email: new FormControl('', [Validators.required, Validators.email]),
+  });
+  onBlur() {
+    // Forza il controllo a essere "touched" quando l'utente esce dal campo
+    this.profileForm.get('email')?.markAsTouched();
+  }
+}
+```
+
+
+[Creating an injectable service](https://angular.dev/tutorials/learn-angular/19-creating-an-injectable-service)
+
+L'iniezione delle dipendenze (Dependency Injection, DI) è un design pattern che consente di ottenere le risorse di cui un componente o servizio ha bisogno senza che questi debbano crearsele da soli. 
+Considera l'iniezione delle dipendenze come la capacità di Angular di fornire le risorse di cui hai bisogno per la tua applicazione durante l'esecuzione. Una dipendenza potrebbe essere un servizio o altre risorse (una get, una post, etc.).
+Un modo per utilizzare un servizio è farlo agire come un mezzo per interagire con i dati e le API.
+
+```ts
+//car.service.ts
+@Injectable({
+  providedIn: 'root',
+})
+export class CarService {
+  cars = ['Sunflower GT', 'Flexus Sport', 'Sprout Mach One'];
+
+  getCars(): string[] {
+    return this.cars;
+  }
+
+  getCar(id: number) {
+    return this.cars[id];
+  }
+}
+```
+`@Injectable Decorator`: Il decoratore `@Injectable` segnala a Angular che questa classe è un servizio che può essere iniettato in altri componenti o servizi. L'opzione `providedIn: 'root'` significa che il servizio è disponibile a livello di applicazione, cioè è istanziato una sola volta e condiviso in tutto il progetto.
+
+
+```ts
+import {Component, inject} from '@angular/core';
+import {CarService} from './car.service';
+
+@Component({
+  selector: 'app-root',
+  template: '<p> {{ carService.getCars() }} </p>',
+})
+export class AppComponent {
+  carService = inject(CarService);  // Iniezione del servizio
+}
+```
+
+
+[Inject-based dependency injection](https://angular.dev/tutorials/learn-angular/20-inject-based-di)
+
+```ts
+import {Component, inject} from '@angular/core';
+import {CarService} from './car.service';
+
+@Component({
+  selector: 'app-root',
+  template: `<p>Car Listing: {{ display }}</p>`,
+})
+export class AppComponent {
+  display = '';
+  carService = inject(CarService);
+  
+  constructor() {
+    this.display = this.carService.getCars().join(' ⭐️ ');
+  }
+}
+```
+
+`inject()` permette di iniettare un servizio dentro un componente per poterlo richiamare tramite le sue varie funzioni.
+
+```ts
+import {Component, inject} from '@angular/core';
+import {CarService} from './car.service';
+
+@Component({
+  selector: 'app-root',
+  template: `<p>Car Listing: {{ display }}</p>`,
+})
+export class AppComponent {
+  
+  carService = inject(CarService);
+  display = this.carService.getCars().join(' ⭐️ ');;
+  
+}
+```
+
+
+[Constructor-based dependency injection](https://angular.dev/tutorials/learn-angular/21-constructor-based-di)
+
+Per iniettare un servizio o altre risorse nel componente, puoi usare un costruttore.
+Il costruttore è il punto di ingresso in cui Angular inietta le dipendenze. Quando un componente viene creato, Angular analizza i parametri del costruttore e si occupa di passare automaticamente le dipendenze necessarie (in questo caso, il servizio PetCareService) al costruttore del componente.
+L'iniezione delle dipendenze nel costruttore permette a Angular di gestire la creazione e la durata degli oggetti (servizi, componenti, etc.). Angular fa uso del suo iniettore di dipendenze per gestire in modo automatico l'istanza di PetCareService.
+
+```ts
+@Component({
+  selector: 'app-pet-car-dashboard',
+  templateUrl: './pet-car-dashboard.component.html',
+  styleUrls: ['./pet-car-dashboard.component.css']
+})
+export class PetCarDashboardComponent {
+  // Il servizio è iniettato tramite il costruttore
+  constructor(private petCareService: PetCareService) {
+    // Inizializzazione del componente
+  }
+}
+```
+ - `private`: è utilizzata per dichiarare e inizializzare una proprietà della classe in modo automatico. `petCareService` sarà accessibile solo all'interno della classe PetCarDashboardComponent.
+ - Il petCareService diventa una proprietà che puoi utilizzare nella tua classe
+ - La classe PetCareService è la classe iniettata
+
+[Pipes](https://angular.dev/tutorials/learn-angular/22-pipes)
+I pipe vengono utilizzati per modificare e formattare i dati in modo che vengano visualizzati nel formato desiderato, senza doverli modificare direttamente nel codice della logica del componente, ma solo tramite il pipe `|`.
+
+```ts
+import {Component} from '@angular/core';
+import { LowerCasePipe } from '@angular/common';
+
+@Component({
+  selector: 'app-root',
+  template: `{{username | lowercase }}`,
+  imports: [LowerCasePipe],
+})
+export class AppComponent {
+  username = 'yOunGTECh';
+}
+```
+
+
+[Formatting data with pipes](https://angular.dev/tutorials/learn-angular/23-pipes-format-data)
+
+Esempio di formattazione con pipes:
+```ts
+import {Component} from '@angular/core';
+import {DecimalPipe, DatePipe, CurrencyPipe} from '@angular/common';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <ul>
+      <li>Number with "decimal" {{ num | number:"3.2-2" }}</li> // {minIntegerDigits}.{minFractionDigits}-{maxFractionDigits}
+      <li>Date with "date" {{ birthday | date: 'medium' }}</li>
+      <li>Currency with "currency" {{ cost | currency }}</li>
+    </ul>
+  `,
+  imports: [DecimalPipe, DatePipe, CurrencyPipe],
+})
+export class AppComponent {
+  num = 103.1234;
+  birthday = new Date(2023, 3, 2);
+  cost = 4560.34;
+}
+```
+
+[Create a custom pipe](https://angular.dev/tutorials/learn-angular/24-create-a-pipe)
+
+un pipe è semplicemente una classe TypeScript con il decoratore `@Pipe`:
+```ts
+import {Pipe, PipeTransform} from '@angular/core';
+@Pipe({
+  name: 'star',
+})
+export class StarPipe implements PipeTransform {
+  transform(value: string): string {
+    return `⭐️ ${value} ⭐️`;
+  }
+}
+```
+
+```ts
+import {Pipe, PipeTransform} from '@angular/core';
+
+@Pipe({
+    name: 'reverse'
+})
+
+export class ReversePipe implements PipeTransform {
+  transform(value: string): string {
+    let reverse = '';
+
+    for (let i = 1; i <= value.length; i++){
+      reverse += value[value.length-i];
+    }
+    return reverse;
+  }
+}
 ```
 
 
 ```ts
-
-```
-
-
-```ts
-
-```
-
-
-```ts
-
-```
-
-
-```ts
-
-```
-
-
-```ts
-
+// app.component
+  template: `
+    Reverse Machine: {{ word | reverse }}
+  `,
+  imports: [ReversePipe],
 ```

@@ -3038,26 +3038,1050 @@ Exmple: [Combining a reducer with context
 
 ```
 
+# Escape Hatches
+### Referencing values with refs
+Per "ricordare" una informazione ma non triggerare un nuovo render puoi usare **`useRef`**: 
 ```jsx
+const ref = useRef(0);
+ref.current = ref.current + 1;
+alert('You clicked ' + ref.current + ' times!');
 
+function handleClick() {
+    inputRef.current.focus();
+  }
+
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={handleClick}>
+        Focus the input
+      </button>
+    </>
+  );
+```
+
+Il hook `useRef` restituisce un oggetto con una singola proprietà chiamata `current`. Inizialmente, `myRef.current` sarà null. 
+Più dettagli sul DOM in [Manipulating the DOM with Refs](#manipulating-the-dom-with-refs).
+
+### Synchronizing with Effects
+
+```jsx
+import { useState, useRef, useEffect } from 'react';
+
+function VideoPlayer({ src, isPlaying }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (isPlaying) {
+      ref.current.play();
+    } else {
+      ref.current.pause();
+    }
+  }, [isPlaying]);
+
+  return <video ref={ref} src={src} loop playsInline />;
+}
+
+export default function App() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  return (
+    <>
+      <button onClick={() => setIsPlaying(!isPlaying)}>
+        {isPlaying ? 'Pause' : 'Play'}
+      </button>
+      <VideoPlayer
+        isPlaying={isPlaying}
+        src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+      />
+    </>
+  );
+}
+```
+
+### Lifecycle of reactive effects 
+Un effetto può fare solo due cose: iniziare a sincronizzare qualcosa e, successivamente, smettere di sincronizzarlo.
+I props sono valori reattivi, il che significa che possono cambiare durante un nuovo rendering.
+
+
+<!--//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-->
+
+## Referencing values with refs
+Il metodo **`setInterval()`** dell'interfaccia Window chiama ripetutamente una funzione o esegue un frammento di codice, con un intervallo di tempo fisso tra ogni chiamata.
+
+Questo metodo restituisce un ID di intervallo che identifica univocamente l'intervallo, in modo che tu possa rimuoverlo successivamente chiamando clearInterval().
+```jsx
+const intervalRef = useRef(null);
+[...]
+    clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setNow(Date.now());
+    }, 10);
+  }
+
+  function handleStop() {
+    clearInterval(intervalRef.current);
+  }
+```
+
+### Forzare manualmente un rerender della pagina
+```jsx
+export default function Counter() {
+  const [, forceRender] = useReducer(x => x + 1, 0);  
+  const [counter, setCounter] = useState(0);
+
+  function handleRerender() {
+    forceRender();
+    setCounter(counter+1);
+  }
+```
+
+## Manipulating the DOM with Refs
+Posso associare a un ref un elemento:
+```jsx
+import { useRef } from 'react';
+
+export default function Form() {
+  const inputRef = useRef(null);
+
+  function handleClick() {
+    inputRef.current.focus();
+  }
+
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={handleClick}>
+        Focus the input
+      </button>
+    </>
+  );
+}
+```
+- **`ref.current.focus();`**: pone il focus su un elemento.
+- **`ref.current.remove();`**: rimuove un elemento.
+- **`inputRef.current.scrollIntoView()`** dice al browser di fare in modo che l'elemento sia visibile se inputRef referenzia un elemento html. Se l'elemento non è già visibile, la pagina verrà automaticamente scrollata in modo che l'elemento in questione venga portato all'interno della vista.
+
+Esempio:
+```jsx
+import { useRef } from 'react';
+
+export default function CatFriends() {
+  const firstCatRef = useRef(null);
+  const secondCatRef = useRef(null);
+  const thirdCatRef = useRef(null);
+
+  function handleScrollToFirstCat() {
+    firstCatRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+  }
+
+  function handleScrollToSecondCat() {
+    secondCatRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+  }
+
+  function handleScrollToThirdCat() {
+    thirdCatRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+  }
+
+  return (
+    <>
+      <nav>
+        <button onClick={handleScrollToFirstCat}>
+          Neo
+        </button>
+        <button onClick={handleScrollToSecondCat}>
+          Millie
+        </button>
+        <button onClick={handleScrollToThirdCat}>
+          Bella
+        </button>
+      </nav>
+      <div>
+        <ul>
+          <li>
+            <img
+              src="https://placecats.com/neo/300/200"
+              alt="Neo"
+              ref={firstCatRef}
+            />
+          </li>
+          <li>
+            <img
+              src="https://placecats.com/millie/200/200"
+              alt="Millie"
+              ref={secondCatRef}
+            />
+          </li>
+          <li>
+            <img
+              src="https://placecats.com/bella/199/200"
+              alt="Bella"
+              ref={thirdCatRef}
+            />
+          </li>
+        </ul>
+      </div>
+    </>
+  );
+}
+```
+
+## Synchronizing with Effects
+
+
+```jsx
+import { useEffect, useRef } from 'react';
+
+function VideoPlayer({ src, isPlaying }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (isPlaying) {
+      ref.current.play();
+    } else {
+      ref.current.pause();
+    }
+  }, [isPlaying]);
+
+  return <video ref={ref} src={src} loop playsInline />;
+}
 ```
 
 ```jsx
+useEffect(() => {
+  // Questo viene eseguito dopo ogni render
+});
 
+useEffect(() => {
+  // Questo viene eseguito solo al montaggio (quando il componente appare)
+}, []);
+
+useEffect(() => {
+  // Questo viene eseguito al montaggio *e anche* se 'a' o 'b' sono cambiati dall'ultimo render
+}, [a, b]);
+```
+
+Quindi, per gestire per esempio le **connessioni**:
+```jsx
+import { useState, useEffect } from 'react';
+
+export default function ChatRoom() {
+  useEffect(() => {
+    const connection = createConnection();
+    connection.connect();
+    return () => connection.disconnect();
+  }, []);
+  return <h1>Welcome to the chat!</h1>;
+}
+
+export function createConnection() {
+  // A real implementation would actually connect to the server
+  return {
+    connect() {
+      console.log('✅ Connecting...');
+    },
+    disconnect() {
+      console.log('❌ Disconnected.');
+    }
+  };
+}
+```
+
+### Controlling non-React widgets 
+```jsx
+useEffect(() => {
+  const dialog = dialogRef.current;
+  dialog.showModal();
+  return () => dialog.close();
+}, []);
 ```
 
 ```jsx
+useEffect(() => {
+  let ignore = false;
 
+  async function startFetching() {
+    const json = await fetchTodos(userId);
+    if (!ignore) {
+      setTodos(json);
+    }
+  }
+
+  startFetching();
+
+  return () => {
+    ignore = true;
+  };
+}, [userId]);
 ```
 
 ```jsx
-
+function TodoList() {
+  const todos = useSomeDataLibrary(`/api/user/${userId}/todos`);
+  // ...
 ```
 
 ```jsx
-
+useEffect(() => {
+  logVisit(url); // Sends a POST request
+}, [url]);
 ```
 
 ```jsx
+if (typeof window !== 'undefined') { // Check if we're running in the browser.
+  checkAuthToken();
+  loadDataFromLocalStorage();
+}
 
+useEffect(() => {
+  // 🔴 Wrong: This Effect fires twice in development, exposing a problem in the code.
+  fetch('/api/buy', { method: 'POST' });
+}, []);
+
+function handleClick() {
+    // ✅ Buying is an event because it is caused by a particular interaction.
+    fetch('/api/buy', { method: 'POST' });
+  }
+
+function App() {
+  // ...
+}
+```
+
+useEffect quando viene creato per la prima volta *esegue* prima il codice, poi *ritorna*.
+Quando viene chiamato *esegue* il codice e poi *ritorna* quando non è più chiamato.
+
+```jsx
+export default function ChatRoom({ roomId }) {
+  useEffect(() => {
+    const connection = createConnection(roomId);
+    connection.connect();
+    return () => connection.disconnect();
+  }, [roomId]);
+
+  return <h1>Welcome to {roomId}!</h1>;
+}
+```
+
+```jsx
+import { useState, useEffect } from "react";
+
+function Playground() {
+  const [text, setText] = useState("a");
+
+  useEffect(() => {
+    console.log('🔵 Schedule "' + text + '" log');
+    const timeoutId = setTimeout(onTimeout, 3000);
+
+    return () => {
+      console.log('🟡 Cancel "' + text + '" log');
+      clearTimeout(timeoutId);
+    };
+
+    function onTimeout() {
+      console.log("⏰ " + text);
+    }
+  }, [text]);
+
+  return (
+    <>
+      <label>
+        What to log:{" "}
+        <input value={text} onChange={(e) => setText(e.target.value)} />
+      </label>
+      <h1>{text}</h1>
+    </>
+  );
+}
+
+export default function App() {
+  const [show, setShow] = useState(false);
+  return (
+    <>
+      <button onClick={() => setShow(!show)}>
+        {show ? "Unmount" : "Mount"} the component
+      </button>
+      {show ? <hr /> : null} {/* Qui usiamo il ternario */}
+      {show ? <Playground /> : null}
+    </>
+  );
+}
+```
+
+## You Might Not Need an Effect (fare esercizi)
+### Updating state based on props or state 
+
+```jsx
+console.time('filter array');
+const visibleTodos = useMemo(() => {
+  return getFilteredTodos(todos, filter); // Skipped if todos and filter haven't changed
+}, [todos, filter]);
+console.timeEnd('filter array');
+```
+
+Il componente ProfilePage riceve una proprietà userId. La pagina contiene un campo di input per i commenti, e utilizzi una variabile di stato comment per memorizzarne il valore. 
+Per azzerare la variabile di stato comment ogni volta che cambia userId:
+```jsx
+export default function ProfilePage({ userId }) {
+  const [comment, setComment] = useState('');
+
+  // 🔴 Evita: Ripristinare lo stato al cambio della proprietà in un Effect
+  useEffect(() => {
+    setComment('');
+  }, [userId]);
+  // ...
+}
+```
+Questo approccio non è efficiente perché ProfilePage e i suoi componenti figli verranno prima renderizzati con il valore obsoleto, per poi essere renderizzati di nuovo. È anche complicato, poiché dovresti fare questo in ogni componente che ha uno stato all'interno di ProfilePage. 
+Invece, puoi dire a React che ogni profilo utente è concettualmente un profilo diverso, dandogli una chiave esplicita. 
+```jsx
+export default function ProfilePage({ userId }) {
+  return (
+    <Profile
+      userId={userId}
+      key={userId}
+    />
+  );
+}
+
+function Profile({ userId }) {
+  // ✅ Questo e qualsiasi altro stato sottostante verrà ripristinato automaticamente al cambio della chiave
+  const [comment, setComment] = useState('');
+  // ...
+}
+```
+
+```jsx
+function List({ items }) {
+  const [isReverse, setIsReverse] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  // ✅ Best: Calculate everything during rendering
+  const selection = items.find(item => item.id === selectedId) ?? null;
+  // ...
+}
+```
+
+### Sharing logic between event handlers
+
+```jsx
+function ProductPage({ product, addToCart }) {
+  // 🔴 Avoid: Event-specific logic inside an Effect
+  useEffect(() => {
+    if (product.isInCart) {
+      showNotification(`Added ${product.name} to the shopping cart!`);
+    }
+  }, [product]);
+
+  function handleBuyClick() {
+    addToCart(product);
+  }
+
+  function handleCheckoutClick() {
+    addToCart(product);
+    navigateTo('/checkout');
+  }
+  // ...
+}
+```
+
+### Sharing logic between event handlers 
+Se aggiungi un prodotto al carrello una volta e ricarichi la pagina, la notifica apparirà di nuovo. Continuerà ad apparire ogni volta che ricarichi la pagina di quel prodotto. Questo accade perché product.isInCart sarà già impostato su true al caricamento della pagina, quindi l'Effect sopra richiamerà showNotification().
+```jsx
+function ProductPage({ product, addToCart }) {
+  // 🔴 Avoid: Event-specific logic inside an Effect
+  useEffect(() => {
+    if (product.isInCart) {
+      showNotification(`Added ${product.name} to the shopping cart!`);
+    }
+  }, [product]);
+
+  function handleBuyClick() {
+    addToCart(product);
+  }
+
+  function handleCheckoutClick() {
+    addToCart(product);
+    navigateTo('/checkout');
+  }
+  // ...
+}
+```
+
+### Sending a POST request
+
+```jsx
+  // ✅ Good: This logic should run because the component was displayed
+  useEffect(() => {
+    post('/analytics/event', { eventName: 'visit_form' });
+  }, []);
+
+  // 🔴 Avoid: Event-specific logic inside an Effect
+  const [jsonToSubmit, setJsonToSubmit] = useState(null);
+  useEffect(() => {
+    if (jsonToSubmit !== null) {
+      post('/api/register', jsonToSubmit);
+    }
+  }, [jsonToSubmit]);
+```
+
+Tuttavia, la richiesta POST a /api/register non è causata dalla visualizzazione del modulo. Vuoi inviare la richiesta solo in un momento specifico: quando l'utente preme il pulsante.
+```jsx
+  // ✅ Good: This logic runs because the component was displayed
+  useEffect(() => {
+    post('/analytics/event', { eventName: 'visit_form' });
+  }, []);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    // ✅ Good: Event-specific logic is in the event handler
+    post('/api/register', { firstName, lastName });
+  }
+  // ...
+```
+
+SBAGLIATO:
+```jsx
+  // 🔴 Avoid: Chains of Effects that adjust the state solely to trigger each other
+  useEffect(() => {
+    if (card !== null && card.gold) {
+      setGoldCardCount(c => c + 1);
+    }
+  }, [card]);
+
+  useEffect(() => {
+    if (goldCardCount > 3) {
+      setRound(r => r + 1)
+      setGoldCardCount(0);
+    }
+  }, [goldCardCount]);
+
+  useEffect(() => {
+    if (round > 5) {
+      setIsGameOver(true);
+    }
+  }, [round]);
+
+  useEffect(() => {
+    alert('Good game!');
+  }, [isGameOver]);
+
+```
+
+CORRETTO:
+```jsx
+  // ✅ Calculate what you can during rendering
+  const isGameOver = round > 5;
+
+  function handlePlaceCard(nextCard) {
+    if (isGameOver) {
+      throw Error('Game already ended.');
+    }
+
+    // ✅ Calculate all the next state in the event handler
+    setCard(nextCard);
+    if (nextCard.gold) {
+      if (goldCardCount <= 3) {
+        setGoldCardCount(goldCardCount + 1);
+      } else {
+        setGoldCardCount(0);
+        setRound(round + 1);
+        if (round === 5) {
+          alert('Good game!');
+        }
+      }
+    }
+  }
+```
+
+### Initializing the application 
+```jsx
+let didInit = false;
+
+function App() {
+  useEffect(() => {
+    if (!didInit) {
+      didInit = true;
+      // ✅ Only runs once per app load
+      loadDataFromLocalStorage();
+      checkAuthToken();
+    }
+  }, []);
+  // ...
+}
+```
+
+O MEGLIO:
+```jsx
+if (typeof window !== 'undefined') { // Check if we're running in the browser.
+   // ✅ Only runs once per app load
+  checkAuthToken();
+  loadDataFromLocalStorage();
+}
+```
+
+### Passing data to the parent 
+Quando i componenti figli aggiornano lo stato dei loro componenti genitori negli Effect, il flusso di dati diventa molto difficile da tracciare.
+Conviene passare dati dal padre al figlio e non viceversa.
+```jsx
+unction Parent() {
+  const data = useSomeAPI();
+  // ...
+  // ✅ Good: Passing data down to the child
+  return <Child data={data} />;
+}
+
+function Child({ data }) {
+  // ...
+}
+```
+
+### Subscribing to an external store
+React ha un Hook appositamente creato per sottoscriversi a un negozio esterno, che è preferibile invece.
+```jsx
+function useOnlineStatus() {
+  // ✅ Good: Subscribing to an external store with a built-in Hook
+  return useSyncExternalStore(
+    subscribe, // React won't resubscribe for as long as you pass the same function
+    () => navigator.onLine, // How to get the value on the client
+    () => true // How to get the value on the server
+  );
+```
+
+### Fetching data 
+
+```jsx
+  useEffect(() => {
+    let ignore = false;
+    fetchResults(query, page).then(json => {
+      if (!ignore) {
+        setResults(json);
+      }
+    });
+    return () => {
+      ignore = true;
+    };
+  }, [query, page]);
+```
+
+```jsx
+function SearchResults({ query }) {
+  const [page, setPage] = useState(1);
+  const params = new URLSearchParams({ query, page });
+  const results = useData(`/api/search?${params}`);
+
+  function handleNextPageClick() {
+    setPage(page + 1);
+  }
+  // ...
+}
+
+function useData(url) {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    let ignore = false;
+    fetch(url)
+      .then(response => response.json())
+      .then(json => {
+        if (!ignore) {
+          setData(json);
+        }
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [url]);
+  return data;
+}
+```
+
+## Lifecycle of Reactive Effects
+
+```jsx
+import { useState, useEffect } from 'react';
+
+export function createConnection(serverUrl, roomId) {
+  // A real implementation would actually connect to the server
+  return {
+    connect() {
+      console.log('✅ Connecting to "' + roomId + '" room at ' + serverUrl + '...');
+    },
+    disconnect() {
+      console.log('❌ Disconnected from "' + roomId + '" room at ' + serverUrl);
+    }
+  };
+}
+
+
+const serverUrl = 'https://localhost:1234';
+
+function ChatRoom({ roomId }) { // The roomId prop may change over time
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId); // This Effect reads roomId 
+    connection.connect();
+    return () => connection.disconnect();
+  }, [roomId]); // So you tell React that this Effect "depends on" roomId
+  return <h1>Welcome to the {roomId} room!</h1>;
+}
+
+export default function App() {
+  const [roomId, setRoomId] = useState('general');
+  const [show, setShow] = useState(false);
+  return (
+    <>
+      <label>
+        Choose the chat room:{' '}
+        <select
+          value={roomId}
+          onChange={e => setRoomId(e.target.value)}
+        >
+          <option value="general">general</option>
+          <option value="travel">travel</option>
+          <option value="music">music</option>
+        </select>
+      </label>
+      <button onClick={() => setShow(!show)}>
+        {show ? 'Close chat' : 'Open chat'}
+      </button>
+      {show && <hr />}
+      {show && <ChatRoom roomId={roomId} />}
+    </>
+  );
+}
+```
+
+```jsx
+function ChatRoom({ roomId }) { // Props change over time
+  const [serverUrl, setServerUrl] = useState('https://localhost:1234'); // State may change over time
+
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId); // Your Effect reads props and state
+    connection.connect();
+    return () => {
+      connection.disconnect();
+    };
+  }, [roomId, serverUrl]); // So you tell React that this Effect "depends on" on props and state
+  // ...
+}
+```
+
+### All variables declared in the component body are reactive  (fare esercizi)
+
+
+```jsx
+function ChatRoom({ roomId }) { // roomId is reactive
+  const [serverUrl, setServerUrl] = useState('https://localhost:1234'); // serverUrl is reactive
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId);
+    connection.connect();
+    return () => {
+      connection.disconnect();
+    };
+  }, [serverUrl, roomId]); // ✅ All dependencies declared
+  // ...
+}
+```
+
+## Separating Events from Effects
+- Event handlers run in response to specific interactions 
+- Effects run whenever synchronization is needed 
+
+### Extracting non-reactive logic out of Effects 
+```jsx
+function ChatRoom({ roomId, theme }) {
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId);
+    connection.on('connected', () => {
+      showNotification('Connected!', theme);
+    });
+    connection.connect();
+    return () => {
+      connection.disconnect();
+      showNotification('Disconnected!', theme);
+      };
+  }, [roomId, theme]);
+```
+
+Esempio senza la riconnessione per il cambio di tema
+```jsx
+import { experimental_useEffectEvent as useEffectEvent } from "react";
+import { createConnection, sendMessage } from "./chat.js";
+import { showNotification } from "./notifications.js";
+
+const serverUrl = "https://localhost:1234";
+
+function ChatRoom({ roomId, theme }) {
+  const onConnected = useEffectEvent(() => {
+    showNotification("Connected!", theme);
+  });
+
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId);
+    connection.on("connected", () => {
+      onConnected();
+    });
+    connection.connect();
+    return () => {
+      connection.disconnect();
+      showNotification("Disconnected!", theme);
+    };
+  }, [roomId]);
+
+  return <h1>Welcome to the {roomId} room!</h1>;
+}
+```
+
+```jsx
+  const onVisit = useEffectEvent(visitedUrl => {
+    logVisit(visitedUrl, numberOfItems);
+  });
+
+  useEffect(() => {
+    setTimeout(() => {
+      onVisit(url);
+    }, 5000); // Delay logging visits
+  }, [url]);
+```
+
+## Are you reading some state to calculate the next state? (**differenze?**)
+```jsx
+function ChatRoom({ roomId }) {
+  const [messages, setMessages] = useState([]);
+  useEffect(() => {
+    const connection = createConnection();
+    connection.connect();
+    connection.on('message', (receivedMessage) => {
+      setMessages([...messages, receivedMessage]);
+    });
+    return () => connection.disconnect();
+  }, [roomId, messages]); // ✅ All dependencies declared
+  // ...
+```
+
+```jsx
+function ChatRoom({ roomId }) {
+  const [messages, setMessages] = useState([]);
+  useEffect(() => {
+    const connection = createConnection();
+    connection.connect();
+    connection.on('message', (receivedMessage) => {
+      setMessages(msgs => [...msgs, receivedMessage]);
+    });
+    return () => connection.disconnect();
+  }, [roomId]); // ✅ All dependencies declared
+  // ...
+```
+
+## Reusing Logic with Custom Hooks
+
+### Controllo online/offline (differenze?)
+```jsx
+import { useState, useEffect } from 'react';
+
+export default function SaveButton() {
+  const [isOnline, setIsOnline] = useState(true);
+  useEffect(() => {
+    function handleOnline() {
+      setIsOnline(true);
+    }
+    function handleOffline() {
+      setIsOnline(false);
+    }
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  function handleSaveClick() {
+    console.log('✅ Progress saved');
+  }
+
+  return (
+    <button disabled={!isOnline} onClick={handleSaveClick}>
+      {isOnline ? 'Save progress' : 'Reconnecting...'}
+    </button>
+  );
+}
+```
+
+La funzione di ritorno (return) all'interno di useEffect è un "cleanup function". Questa funzione viene eseguita quando il componente viene smontato o quando l'effetto deve essere eseguito di nuovo. In questo caso, si rimuovono gli event listener per evitare che vengano chiamati quando il componente non è più presente nella pagina.
+
+```jsx
+import { useOnlineStatus } from './useOnlineStatus.js';
+
+function StatusBar() {
+  const isOnline = useOnlineStatus();
+  return <h1>{isOnline ? '✅ Online' : '❌ Disconnected'}</h1>;
+}
+
+function SaveButton() {
+  const isOnline = useOnlineStatus();
+
+  function handleSaveClick() {
+    console.log('✅ Progress saved');
+  }
+
+  return (
+    <button disabled={!isOnline} onClick={handleSaveClick}>
+      {isOnline ? 'Save progress' : 'Reconnecting...'}
+    </button>
+  );
+}
+
+export default function App() {
+  return (
+    <>
+      <SaveButton />
+      <StatusBar />
+    </>
+  );
+}
+```
+
+### Passing reactive values between Hooks 
+
+```jsx
+export function useChatRoom({ serverUrl, roomId }) {
+  useEffect(() => {
+    const options = {
+      serverUrl: serverUrl,
+      roomId: roomId
+    };
+    const connection = createConnection(options);
+    connection.connect();
+    connection.on('message', (msg) => {
+      showNotification('New message: ' + msg);
+    });
+    return () => connection.disconnect();
+  }, [roomId, serverUrl]);
+}
+```
+
+```jsx
+ useChatRoom({
+    roomId: roomId,
+    serverUrl: serverUrl
+  });
+```
+
+### When to use custom Hooks 
+
+
+```jsx
+function useData(url) {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    if (url) {
+      let ignore = false;
+      fetch(url)
+        .then(response => response.json())
+        .then(json => {
+          if (!ignore) {
+            setData(json);
+          }
+        });
+      return () => {
+        ignore = true;
+      };
+    }
+  }, [url]);
+  return data;
+}
+```
+
+```jsx
+function ShippingForm({ country }) {
+  const cities = useData(`/api/cities?country=${country}`);
+  const [city, setCity] = useState(null);
+  const areas = useData(city ? `/api/areas?city=${city}` : null);
+  // ...
+```
+
+Esempio di **fade-in** su oggetto
+
+```jsx
+//app.js
+import { useState, useEffect, useRef } from 'react';
+import { useFadeIn } from './useFadeIn.js';
+
+function Welcome() {
+  const ref = useRef(null);
+
+  useFadeIn(ref, 1000);
+
+  return (
+    <h1 className="welcome" ref={ref}>
+      Welcome
+    </h1>
+  );
+}
+
+export default function App() {
+  const [show, setShow] = useState(false);
+  return (
+    <>
+      <button onClick={() => setShow(!show)}>
+        {show ? 'Remove' : 'Show'}
+      </button>
+      <hr />
+      {show && <Welcome />}
+    </>
+  );
+}
+```
+
+```jsx
+//useFadeIn.js
+import { useEffect } from 'react';
+
+export function useFadeIn(ref, duration) {
+  useEffect(() => {
+    const node = ref.current;
+
+    let startTime = performance.now();
+    let frameId = null;
+
+    function onFrame(now) {
+      const timePassed = now - startTime;
+      const progress = Math.min(timePassed / duration, 1);
+      onProgress(progress);
+      if (progress < 1) {
+        // We still have more frames to paint
+        frameId = requestAnimationFrame(onFrame);
+      }
+    }
+
+    function onProgress(progress) {
+      node.style.opacity = progress;
+    }
+
+    function start() {
+      onProgress(0);
+      startTime = performance.now();
+      frameId = requestAnimationFrame(onFrame);
+    }
+
+    function stop() {
+      cancelAnimationFrame(frameId);
+      startTime = null;
+      frameId = null;
+    }
+
+    start();
+    return () => stop();
+  }, [ref, duration]);
+}
 ```
