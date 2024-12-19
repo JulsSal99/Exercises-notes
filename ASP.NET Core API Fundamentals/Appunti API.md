@@ -446,30 +446,192 @@ public ActionResult UpdatePointOfInterest(int cityId, int pointofinterestid, Poi
 }
 ```
 
+
+[Demo: Adding Support for JsonPatchDocument](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/3aff53f4-4da8-430c-8370-94b41bc71844/130450f3-22ed-438e-86c4-002235377a00)
+
+Installa NuGet `JsonPatch` e `Mvc.NewtonsoftJson`
 ```cs
+//Program.cs
+builder.Services.AddControllers(options =>
+{
+    options.ReturnHttpNotAcceptable = true;
+}).AddNewtonsoftJson().AddXmlDataContractSerializerFormatters();
 ```
 
-```cs
-```
+**CONTROLLA CHE PATCH NON CERCHI DI CAMBIARE l'ID**
 
 ```cs
+[HttpPatch("{pointofinterestid}")]
+public ActionResult PartiallyUpdatePointOfInterest(int cityId, int pointofinterestid, JsonPatchDocument<PointOfInterestForUpdateDto> patchDocument)
+{
+    var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+    if (city == null)
+    {
+        return NotFound();
+    }
+
+    var pointOfInterestFromStore = city.PointsOfInterest.FirstOrDefault(c => c.Id == pointofinterestid);
+    if (pointOfInterestFromStore == null)
+    {
+        return NotFound();
+    }
+
+    var pointOfInterestToPatch =
+        new PointOfInterestForUpdateDto()
+        {
+            Name = pointOfInterestFromStore.Name,
+            Description = pointOfInterestFromStore.Description,
+        };
+
+    patchDocument.ApplyTo(pointOfInterestToPatch, ModelState);
+
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
+
+    if (!TryValidateModel(pointOfInterestToPatch))
+    {
+        return BadRequest(ModelState);
+    }
+
+    pointOfInterestFromStore.Name = pointOfInterestToPatch.Name;
+    pointOfInterestFromStore.Description = pointOfInterestToPatch.Description;
+
+    return NoContent();
+}
 ```
+
+
+[Demo: Deleting a Resource](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/3aff53f4-4da8-430c-8370-94b41bc71844/b6e2372a-129b-41da-8c40-030cfb9b23fb)
 
 ```cs
+[HttpDelete("{pointofinterestid}")]
+public ActionResult DeletePointOfInterest(int cityId, int pointofinterestid)
+{
+    var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+    if (city == null)
+    {
+        return NotFound();
+    }
+
+    var pointOfInterestFromStore = city.PointsOfInterest.FirstOrDefault(c => c.Id == pointofinterestid);
+    if (pointOfInterestFromStore == null)
+    {
+        return NotFound();
+    }
+
+    city.PointsOfInterest.Remove(pointOfInterestFromStore);
+    return NoContent();
+}
 ```
+
+[Demo: Creating a File](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/3aff53f4-4da8-430c-8370-94b41bc71844/f974f82f-da7f-4074-bba5-9054c320f74c)
 
 ```cs
+[HttpPost]
+public async Task<ActionResult> CreateFile (IFormFile file)
+{
+    if (file.Length == 0 
+        || file.Length > 20971520 
+        || file.ContentType != "application/pdf")
+    {
+        return BadRequest("No file or an invalid one has been inputted");
+    }
+
+    var path = Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "Uploaded/",
+        $"uploaded_file_{Guid.NewGuid()}.pdf");
+
+    using (var stream = new FileStream(path, FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+
+    return Ok("Your file has been uploaded successfully");
+}
 ```
 
+[Demo: Injecting and Using a Logger](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/9ff8ceb9-b381-425a-b71e-da32e078b75c)
+
+Per dichiarare un logger:
 ```cs
+public class PointsOfInterestController : ControllerBase
+{
+    private readonly ILogger<PointsOfInterestController> _logger;
+
+    public PointsOfInterestController(ILogger<PointsOfInterestController> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    [HttpGet]
+    public ActionResult<IEnumerable<PointOfInterestDto>> GetPointsOfInterest(int cityid)
+    {
+        try
+        {
+            var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityid);
+            if (city == null)
+            {
+                _logger.LogInformation($"City with id {cityid} wasn't found when accessing");
+                return NotFound();
+            }
+            else
+            {
+                return Ok(city.PointsOfInterest);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical($"Exception while gettin id {cityid}");
+            return StatusCode(500, "A problem happened while handling your request");
+        }
+    }
 ```
 
+e modifica anche appsettings.json
 ```cs
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
 ```
+**ATTENZIONE: il log è visibile all'utente. **
 
+Per stampare solo i messaggi di errore come errorcode, cambia in `launchsettings.json`
 ```cs
+  "profiles": {
+    "CityInfo.API": {
+      "commandName": "Project",
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      }
+    },
 ```
 
+e `Program.cs`
+```cs
+builder.Services.AddProblemDetails();
+
+...
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler();
+}
+```
+
+[Demo: Replacing the Default Logger and Logging to a File](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/fcb70223-100f-4916-b811-e1f6646b33ab)
+**SALVARE I LOG in un FILE**
+
+[Demo: Implementing and Using a Custom Service](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/97bfee68-7225-440e-afa2-a6af7074e98b)
 ```cs
 ```
 
