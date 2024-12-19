@@ -409,8 +409,9 @@ public class PointOfInterestForCreationDto
     public string? Description {  get; set; } 
 }
 ```
-Eseguono nel controller
+
 ```cs
+//PointsOfInterestController.cs
 if (!ModelState.IsValid)
 {
     return BadRequest();
@@ -421,6 +422,7 @@ if (!ModelState.IsValid)
 [Demo: Updating a Resource](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/3aff53f4-4da8-430c-8370-94b41bc71844/c9e511ec-7c6a-48fc-b4fb-be6a9c3184e0)
 
 ```cs
+//PointsOfInterestController.cs
 [Route("api/cities/{cityid}/pointsofinterest")]
 ...
 [HttpPut("{pointofinterestid}")]
@@ -461,6 +463,7 @@ builder.Services.AddControllers(options =>
 **CONTROLLA CHE PATCH NON CERCHI DI CAMBIARE l'ID**
 
 ```cs
+//PointsOfInterestController.cs
 [HttpPatch("{pointofinterestid}")]
 public ActionResult PartiallyUpdatePointOfInterest(int cityId, int pointofinterestid, JsonPatchDocument<PointOfInterestForUpdateDto> patchDocument)
 {
@@ -506,6 +509,7 @@ public ActionResult PartiallyUpdatePointOfInterest(int cityId, int pointofintere
 [Demo: Deleting a Resource](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/3aff53f4-4da8-430c-8370-94b41bc71844/b6e2372a-129b-41da-8c40-030cfb9b23fb)
 
 ```cs
+//PointsOfInterestController.cs
 [HttpDelete("{pointofinterestid}")]
 public ActionResult DeletePointOfInterest(int cityId, int pointofinterestid)
 {
@@ -529,6 +533,7 @@ public ActionResult DeletePointOfInterest(int cityId, int pointofinterestid)
 [Demo: Creating a File](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/3aff53f4-4da8-430c-8370-94b41bc71844/f974f82f-da7f-4074-bba5-9054c320f74c)
 
 ```cs
+//PointsOfInterestController.cs
 [HttpPost]
 public async Task<ActionResult> CreateFile (IFormFile file)
 {
@@ -555,8 +560,9 @@ public async Task<ActionResult> CreateFile (IFormFile file)
 
 [Demo: Injecting and Using a Logger](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/9ff8ceb9-b381-425a-b71e-da32e078b75c)
 
-Per dichiarare un logger:
+Per dichiarare un **logger**:
 ```cs
+//PointsOfInterestController.cs
 public class PointsOfInterestController : ControllerBase
 {
     private readonly ILogger<PointsOfInterestController> _logger;
@@ -589,9 +595,8 @@ public class PointsOfInterestController : ControllerBase
         }
     }
 ```
-
-e modifica anche appsettings.json
 ```cs
+//appsettings.json
 {
   "Logging": {
     "LogLevel": {
@@ -603,8 +608,9 @@ e modifica anche appsettings.json
 ```
 **ATTENZIONE: il log è visibile all'utente. **
 
-Per stampare solo i messaggi di errore come errorcode, cambia in `launchsettings.json`
+Per stampare solo i messaggi di errore come errorcode, cambia:
 ```cs
+//launchsettings.json
   "profiles": {
     "CityInfo.API": {
       "commandName": "Project",
@@ -632,6 +638,99 @@ if (app.Environment.IsDevelopment())
 **SALVARE I LOG in un FILE**
 
 [Demo: Implementing and Using a Custom Service](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/97bfee68-7225-440e-afa2-a6af7074e98b)
+
+```cs
+//Program.cs
+builder.Services.AddTransient<LocalMailService>();
+```
+AddTransient indica che ogni volta che viene richiesto il servizio LocalMailService, verrà creata una nuova istanza di LocalMailService. Questo è utile quando il servizio non mantiene stato tra le richieste e può essere creato e distrutto rapidamente.
+
+```cs
+public class PointsOfInterestController : Controller
+{
+    private readonly LocalMailService _mailservice;
+
+    public PointsOfInterestController(LocalMailService mailservice) 
+    { 
+        _mailservice = mailservice ?? throw new ArgumentNullException(nameof(mailservice));
+    }
+
+    public IActionResult SendEmail()
+    {
+        // Usa il servizio per inviare un'email
+        _mailservice.SendMail("recipient@example.com", "Subject", "Body of the email");
+        return Ok("Email sent successfully");
+    }
+}
+```
+ASP.NET Core crea un'istanza del controller PointsOfInterestController per soddisfare una richiesta, il framework rileva il costruttore e vede che ha bisogno di un'istanza di LocalMailService.
+
+[Demo: Registering a Service by Interface](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/760015bb-f6a0-4461-bd3a-437adc888b8f)
+
+`AddSingleton<T>()` indica che verrà creata una sola istanza del servizio durante tutta la durata dell'applicazione e questa stessa istanza verrà utilizzata ogni volta che il servizio viene richiesto. In altre parole, il servizio sarà condiviso tra tutte le richieste e gli oggetti che lo richiedono.
+```cs
+//Program.cs
+builder.Services.AddSingleton<CitiesDataStore>();
+```
+
+## Esempio di direttive e condizioni di compilazione
+```cs
+#region CONFIG1
+Console.WriteLine($"Mail from {_mailFrom} to {_mailTo}, with {nameof(CloudMailService)}.");
+#endregion 
+
+#if DEBUG
+            Console.WriteLine($"Subject: {subject}");
+#else
+            Console.WriteLine($"Message: {message}");
+#endif
+```
+
+[Demo: Working with Configuration Files](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/898c1890-2b7b-4061-9fe7-f223cd34f77b)
+
+Posso definire variabili appsettings.json
+```cs
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "mailSettings": {
+    "mailToAdress": "admin@mycompany.com",
+    "mailFromAdress":  "notreply@mycompany.com"
+  },
+  "AllowedHosts": "*"
+}
+```
+
+e lo implemento così:
+```cs
+        private string _mailTo = string.Empty;
+        private string _mailFrom = string.Empty;
+
+        public LocalMailService(IConfiguration configuration)
+        {
+            _mailTo = configuration["mailSettings:mailToAddress"];
+            _mailFrom = configuration["mailSettings:mailFromAddress"];
+        }
+```
+
+[Demo: Scoping Configuration to Environments](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/72d861f5-3ecf-4ac8-83e7-544759cb6b49)
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
 ```cs
 ```
 
