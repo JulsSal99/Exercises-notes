@@ -718,6 +718,9 @@ e lo implemento così:
 ```
 
 [Demo: Scoping Configuration to Environments](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/86b07a93-ba70-4da9-829d-06677ad3d4f1/72d861f5-3ecf-4ac8-83e7-544759cb6b49)
+Dichiarando un nuovo `appsettings.production`, posso dichiarare le variabili che verranno utilizzate quando in modalità produzione
+
+
 
 ```cs
 ```
