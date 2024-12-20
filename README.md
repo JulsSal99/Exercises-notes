@@ -14,3 +14,4 @@ All my programming notes across various languages
 - [Entity Framework 8 Fundamentals](https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents)
   - [https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents](https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents)  
     - [repository](https://github.com/JulieLerman/EFCore8Fundamentals)
+- [ASP.NET Core Web API Fundamentals](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/a8d510a4-2e75-4d9a-b2de-9d1d717104e3/summary)
