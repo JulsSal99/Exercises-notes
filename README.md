@@ -11,7 +11,7 @@ All my programming notes across various languages
   - [https://react.dev/learn](https://react.dev/learn)
 - [Asp.Net Core Web App](./asp.net)
   - [https://learn.microsoft.com/en-us/training/paths/aspnet-core-web-app/](https://learn.microsoft.com/en-us/training/paths/aspnet-core-web-app/)
-- [Entity Framework 8 Fundamentals](https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents)
+- [Entity Framework 8 Fundamentals](./Entity%20Framework%208%20Fundament)
   - [https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents](https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents)  
     - [repository](https://github.com/JulieLerman/EFCore8Fundamentals)
 - [ASP.NET Core Web API Fundamentals](https://app.pluralsight.com/library/courses/asp-dot-net-core-6-web-api-fundamentals/table-of-contents)
