@@ -1,17 +1,3 @@
- - [C#](https://learn.microsoft.com/en-us/collections/yz26f8y64n7k07) 
-
- - [ASP.NET](https://learn.microsoft.com/en-us/training/paths/aspnet-core-web-app/)
-
- - [ef-core-8-fundamentals](https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents)
-     - [JulieLerman github](https://github.com/JulieLerman/EFCore8Fundamentals)
-
- - [Asp.net Core 7 - Minimal Apis](https://app.pluralsight.com/library/courses/asp-dot-net-core-7-building-minimal-apis/table-of-contents)
-
- - [MVC controller](https://learn.microsoft.com/it-it/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-9.0&tabs=visual-studio)
-
-
-
-
 
 dotnet new console -o ./CsharpProjects/TestProject
 dotnet build
