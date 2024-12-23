@@ -18,3 +18,4 @@ All my programming notes across various languages
   - [https://app.pluralsight.com/library/courses/asp-dot-net-core-7-building-minimal-apis/table-of-contents](https://app.pluralsight.com/library/courses/asp-dot-net-core-7-building-minimal-apis/table-of-contents)
 - [ASP.NET Core Web API Fundamentals](./ASP.NET%20Core%20API%20Fundamentals)
   - [https://app.pluralsight.com/library/courses/asp-dot-net-core-6-web-api-fundamentals/table-of-contents](https://app.pluralsight.com/library/courses/asp-dot-net-core-6-web-api-fundamentals/table-of-contents)
+  - [github](https://github.com/kevindockx/aspnetcorewebapifundamentals)
