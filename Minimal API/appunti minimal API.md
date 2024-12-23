@@ -3,10 +3,6 @@ C#
 ASP.NET 
 [text](https://learn.microsoft.com/en-us/training/paths/aspnet-core-web-app/)
 
-
-Usr: learn@eventweb.it
-Pwd: event.L3@rn
-
  - [text](https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents)
      - [text](https://github.com/JulieLerman/EFCore8Fundamentals)
 
