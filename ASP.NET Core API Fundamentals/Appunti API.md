@@ -280,6 +280,11 @@ builder.Services.AddControllers(options =>
 
 ## [Demo: Getting a File](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/23c10c6c-4054-4416-bb00-f5df5887ea4c/194fc49d-827b-4732-ba18-21399cc8ad5b)
 
+Un servizio può essere registrato come:
+- `transient` : Nuovo oggetto creato per ogni richiesta. Ogni volta che viene richiesto, è un'istanza distinta, che non conserva alcun stato tra le richieste.
+- `lifetime` : Oggetti condivisi all'interno di uno stesso ciclo di vita. Riutilizzato per tutte le dipendenze che ne fanno richiesta durante lo stesso ciclo di vita, ma non tra richieste diverse.
+- `singleton` : Unico per tutta la durata dell'applicazione. La stessa istanza è utilizzata ogni volta che viene richiesta, quindi viene condivisa tra tutte le dipendenze che ne fanno uso.
+
 ```cs
 //FilesController.cs
 using Microsoft.AspNetCore.Mvc;
@@ -877,19 +882,643 @@ namespace CityInfo.API.Services
 
 [DA CONTINUARE](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/b287b744-11fc-4af7-9e08-c9356499c71f/4d259b9d-2a52-4e47-9dbd-b8dcf17f0935)
 
+Esempio di comando **'OrderBy'**:
 ```cs
+public CityInfoRepository(CityInfoContext context)
+{
+    _context = context ?? throw new ArgumentNullException(nameof(context));
+}
+public async Task<IEnumerable<City>> GetCitiesAsync()
+{
+    return await _context.Cities.OrderBy(c => c.Name).ToListAsync();
+}
 ```
 
 ```cs
+//CityInfoRepository.cs
+using CityInfo.API.DbContexts;
+using CityInfo.API.Entities;
+using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
+
+namespace CityInfo.API.Services
+{
+    public class CityInfoRepository : ICityInfoRepository
+    {
+        private readonly CityInfoContext _context;
+        public CityInfoRepository(CityInfoContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+        public async Task<IEnumerable<City>> GetCitiesAsync()
+        {
+            return await _context.Cities.OrderBy(c => c.Name).ToListAsync();
+        }
+
+        public async Task<City?> GetCityAsync(int cityId, bool includePointsOfInterest)
+        {
+            if (includePointsOfInterest)
+            {
+                return await _context.Cities.Include(c => c.PointOfInterests)
+                    .Where(c => c.Id == cityId).FirstOrDefaultAsync();
+            }
+
+            return await _context.Cities
+                .Where(c => c.Id == cityId).FirstOrDefaultAsync();
+        }
+
+        public async Task<PointOfInterest?> GetPointsOfInterestForCityAsync(int cityId, int pointOfInterestId)
+        {
+            return await _context.PointOfInterests
+                    .Where(p => p.Id == cityId && p.Id == pointOfInterestId).FirstOrDefaultAsync();
+        }
+        public async Task<IEnumerable<PointOfInterest?>> GetPointOfInterestForCityAsync(int cityId, int pointOfInterestId)
+        {
+            return await _context.PointOfInterests
+                    .Where(p => p.CityId == cityId).ToListAsync();
+        }
+    }
+}
 ```
 
 ```cs
+//ICityInfoRepository.cs
+using CityInfo.API.Entities;
+
+namespace CityInfo.API.Services
+{
+    public interface ICityInfoRepository
+    {
+        Task<IEnumerable<City>> GetCitiesAsync();
+
+        Task<City?> GetCityAsync(int cityId, bool includePointsOfInterest);
+
+        Task<PointOfInterest?> GetPointsOfInterestForCityAsync(int cityId, int pointOfInterestId);
+        Task<IEnumerable<PointOfInterest>> GetPointOfInterestForCityAsync(int cityId, int pointOfInterestId);
+    }
+}
+```
+
+**?? RIGUARDA QUESTA E PRECEDENTE**
+
+## [Demo: Using AutoMapper to Map Between Entities and DTOs](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/b287b744-11fc-4af7-9e08-c9356499c71f/c436759a-c47a-491c-8c80-0e12f6f21017)
+
+Uso di Mapper:
+
+```cs
+//CitiesController.cs
+namespace CityInfo.API.Controllers
+{
+    [ApiController]
+    [Route("api/cities")]
+    public class CitiesController : ControllerBase
+    {
+        private readonly ICityInfoRepository _cityInfoRepository;
+        private readonly IMapper _mapper;
+
+        public CitiesController(ICityInfoRepository cityInfoRepository,
+            IMapper mapper)
+        {
+            _cityInfoRepository = cityInfoRepository ??
+                throw new ArgumentNullException(nameof(cityInfoRepository));
+            _mapper = mapper ??
+                throw new ArgumentNullException(nameof(mapper));
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CityWithoutPointsOfInterestDto>>> GetCities()
+        {
+            var cityEntities = await _cityInfoRepository.GetCitiesAsync();
+            return Ok(_mapper.Map<IEnumerable<CityWithoutPointsOfInterestDto>>(cityEntities));
+
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetCity(
+            int id, bool includePointsOfInterest = false)
+        {
+            var city = await _cityInfoRepository.GetCityAsync(id, includePointsOfInterest);
+            if (city == null)
+            {
+                return NotFound();
+            }
+
+            if (includePointsOfInterest)
+            {
+                return Ok(_mapper.Map<CityDto>(city));
+            }
+
+            return Ok(_mapper.Map<CityWithoutPointsOfInterestDto>(city));
+        }
 ```
 
 ```cs
+//Profiles/CityProfile.cs
+namespace CityInfo.API.Profiles
+{
+    public class CityProfile : Profile
+    {
+        public CityProfile()
+        {
+            CreateMap<Entities.City, Models.CityWithoutPointsOfInterestDto>();
+            CreateMap<Entities.City, Models.CityDto>();
+            
+        }
+    }
+}
 ```
 
 ```cs
+//Models/CityDto.cs
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+```
+
+```cs
+    public class CityDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public int NumberOfPointsOfInterest
+        {
+            get
+            {
+                return PointsOfInterest.Count;
+            }
+        }
+
+        public ICollection<PointOfInterestDto> PointsOfInterest { get; set; }
+            = new List<PointOfInterestDto>();
+    }
+```
+**Count permette di ritornare la conta degli elementi.**
+
+## [Demo: Creating a Resource](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/b287b744-11fc-4af7-9e08-c9356499c71f/86937211-7cc6-4ab6-907f-fb41954c3aa8)
+
+```cs
+//Services/CityInfoRepository.cs
+        public async Task<bool> SaveChangesAsync()
+        {
+            return (await _context.SaveChangesAsync() >= 0);
+        }
+```
+
+```cs
+//Controllers/PointsOfInterestController.cs
+await _cityInfoRepository.SaveChangesAsync();
+var createdPointOfInterestToReturn =
+                _mapper.Map<Models.PointOfInterestDto>(finalPointOfInterest);
+```
+
+## [Demo: Updating a Resource](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/b287b744-11fc-4af7-9e08-c9356499c71f/b009717f-6aa8-44ec-bb02-e44c5292a255)
+
+## [Demo: Partially Updating a Resource](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/b287b744-11fc-4af7-9e08-c9356499c71f/851914e4-e052-44d6-a35d-819f7dbb5482)
+```cs
+//Controllers/PointsOfInterestController.cs
+[HttpPatch("{pointofinterestid}")]
+        public async Task<ActionResult> PartiallyUpdatePointOfInterest(
+           int cityId, int pointOfInterestId,
+           JsonPatchDocument<PointOfInterestForUpdateDto> patchDocument)
+        {
+            if (!await _cityInfoRepository.CityExistsAsync(cityId))
+            {
+                return NotFound();
+            }
+
+            var pointOfInterestEntity = await _cityInfoRepository
+                .GetPointOfInterestForCityAsync(cityId, pointOfInterestId);
+            if (pointOfInterestEntity == null)
+            {
+                return NotFound();
+            }
+
+            var pointOfInterestToPatch = _mapper.Map<PointOfInterestForUpdateDto>(
+                pointOfInterestEntity);
+
+            patchDocument.ApplyTo(pointOfInterestToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!TryValidateModel(pointOfInterestToPatch))
+            {
+                return BadRequest(ModelState);
+            }
+
+            _mapper.Map(pointOfInterestToPatch, pointOfInterestEntity);
+            await _cityInfoRepository.SaveChangesAsync();
+
+            return NoContent();
+        }
+```
+
+E nella chiamata PAtCH in formato RAW/JSON verso cities/1/pointsofinterest/1
+```cs
+[
+    {
+        "op": "replace",
+        "path": "/name",
+        "value": "Updated again - Central Park"
+    }
+]
+```
+
+## [Demo: Deleting a Resource](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/b287b744-11fc-4af7-9e08-c9356499c71f/61758f1f-edbc-4c55-aced-390b81b3fa6e)
+
+```cs
+[HttpDelete("{pointOfInterestId}")]
+public async Task<ActionResult> DeletePointOfInterest(
+    int cityId, int pointOfInterestId)
+{
+    if (!await _cityInfoRepository.CityExistsAsync(cityId))
+    {
+        return NotFound();
+    }
+
+    var pointOfInterestEntity = await _cityInfoRepository
+        .GetPointOfInterestForCityAsync(cityId, pointOfInterestId);
+    if (pointOfInterestEntity == null)
+    {
+        return NotFound();
+    }
+
+    _cityInfoRepository.DeletePointOfInterest(pointOfInterestEntity);
+    await _cityInfoRepository.SaveChangesAsync();
+
+    _mailService.Send(
+        "Point of interest deleted.",
+        $"Point of interest {pointOfInterestEntity.Name} with id {pointOfInterestEntity.Id} was deleted.");
+
+    return NoContent();
+}
+```
+
+```cs
+//Services/ICityInfoRepository.cs
+void DeletePointOfInterest(PointOfInterest pointOfInterest); //non è un metodo I/O, quindi non è ASYNC
+```
+
+```cs
+//Services/CityInfoRepository.cs
+public void DeletePointOfInterest(PointOfInterest pointOfInterest)
+        {
+            _context.PointsOfInterest.Remove(pointOfInterest);
+        }
+```
+
+## [Demo: Filtering Resources](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/c512c7f7-61a7-4e08-bbc2-2ccb85956e7c/946913c3-bc9c-4bdc-9618-ab1764886d11)
+
+
+## [Demo: Filtering Resources](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/c512c7f7-61a7-4e08-bbc2-2ccb85956e7c/946913c3-bc9c-4bdc-9618-ab1764886d11)
+```cs
+//appsetings.Development.json
+"Microsoft.EntityFrameworkCore.Database.Command": "Information"
+```
+Questo comando mostra informazioni non necessarie di query nel log solo in stato Development
+
+
+## [Demo: Searching Through Resources](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/c512c7f7-61a7-4e08-bbc2-2ccb85956e7c/2f3df1e9-c351-43f2-8b8b-eb69170ff99b)
+
+## [Demo: Paging Through Resources](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/c512c7f7-61a7-4e08-bbc2-2ccb85956e7c/69674a94-a552-4faf-b8fb-ec7d142b6d35)
+Il "paging" (o paginazione) è una tecnica che viene utilizzata per suddividere una grande quantità di dati in "pagine" più piccole e gestibili, così che possano essere recuperati e visualizzati in modo più efficiente.
+```cs
+public async Task<(IEnumerable<City>, PaginationMetadata)> GetCitiesAsync(
+            string? name, string? searchQuery, int pageNumber, int pageSize)
+        {
+            // collection to start from
+            var collection = _context.Cities as IQueryable<City>;
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                name = name.Trim();
+                collection = collection.Where(c => c.Name == name);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                searchQuery = searchQuery.Trim();
+                collection = collection.Where(a => a.Name.Contains(searchQuery)
+                    || (a.Description != null && a.Description.Contains(searchQuery)));
+            }
+
+            var totalItemCount = await collection.CountAsync();
+
+            var paginationMetadata = new PaginationMetadata(
+                totalItemCount, pageSize, pageNumber);
+
+            var collectionToReturn = await collection.OrderBy(c => c.Name)
+                .Skip(pageSize * (pageNumber - 1))
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (collectionToReturn, paginationMetadata);
+        }
+```
+ - `Skip(pageSize * (pageNumber - 1))`: questa istruzione salta (o esclude) un certo numero di città. In particolare, calcola il numero di elementi da saltare in base al numero di pagina corrente. Ad esempio, se pageNumber è 3 e pageSize è 10, salterà i primi 20 risultati (10 per pagina, quindi le prime 2 pagine) e inizierà a restituire i risultati dalla pagina 3.
+ - `Take(pageSize)` : questa istruzione prende solo il numero di città corrispondenti alla dimensione della pagina (pageSize). Ad esempio, se pageSize è 10, verranno prese solo 10 città per la pagina corrente.
+
+## [Demo: Returning Pagination Metadata](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/c512c7f7-61a7-4e08-bbc2-2ccb85956e7c/d6839ea5-2277-4052-92ad-9981f774af9b)
+
+```cs
+//Services/PaginationMetadata.cs
+public class PaginationMetadata
+    {
+        public int TotalItemCount { get; set; }
+        public int TotalPageCount { get; set; }
+        public int PageSize { get; set; }
+        public int CurrentPage { get; set; }
+
+        public PaginationMetadata(int totalItemCount, int pageSize, int currentPage)
+        {
+            TotalItemCount = totalItemCount;
+            PageSize = pageSize;
+            CurrentPage = currentPage;
+            TotalPageCount = (int)Math.Ceiling(totalItemCount / (double)pageSize);
+        }
+    }
+```
+
+
+```cs
+//Services/CityInfoRepository.cs
+public async Task<(IEnumerable<City>, PaginationMetadata)> GetCitiesAsync(
+    string? name, string? searchQuery, int pageNumber, int pageSize)
+{
+    // collection to start from
+    var collection = _context.Cities as IQueryable<City>;
+
+    if (!string.IsNullOrWhiteSpace(name))
+    {
+        name = name.Trim();
+        collection = collection.Where(c => c.Name == name);
+    }
+
+    if (!string.IsNullOrWhiteSpace(searchQuery))
+    {
+        searchQuery = searchQuery.Trim();
+        collection = collection.Where(a => a.Name.Contains(searchQuery)
+            || (a.Description != null && a.Description.Contains(searchQuery)));
+    }
+
+    var totalItemCount = await collection.CountAsync();
+
+    var paginationMetadata = new PaginationMetadata(
+        totalItemCount, pageSize, pageNumber);
+
+    var collectionToReturn = await collection.OrderBy(c => c.Name)
+        .Skip(pageSize * (pageNumber - 1))
+        .Take(pageSize)
+        .ToListAsync();
+
+    return (collectionToReturn, paginationMetadata);
+}
+```
+`CountAsync` è una funzione di EntityFramework 
+
+
+```cs
+//Controllers/CitiesController.cs
+[HttpGet]
+public async Task<ActionResult<IEnumerable<CityWithoutPointsOfInterestDto>>> GetCities(
+            string? name, string? searchQuery, int pageNumber = 1, int pageSize = 10)
+{
+    if (pageSize > maxCitiesPageSize)
+    {
+        pageSize = maxCitiesPageSize;
+    }
+
+    var (cityEntities, paginationMetadata) = await _cityInfoRepository
+        .GetCitiesAsync(name, searchQuery, pageNumber, pageSize);
+
+    Response.Headers.Add("X-Pagination",
+        JsonSerializer.Serialize(paginationMetadata));
+
+    return Ok(_mapper.Map<IEnumerable<CityWithoutPointsOfInterestDto>>(cityEntities));
+}
+```
+
+https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/64eb2eda-8937-4921-b840-9d58d17931f2/c3449838-76d1-4949-8df4-423ac64ea29f
+
+## [Demo: Creating a Token](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/64eb2eda-8937-4921-b840-9d58d17931f2/efe6c29c-8d59-4b02-94fc-20e3485d33ba)
+
+```cs
+//Controllers/AuthenticationController.cs
+[Route("api/authentication")]
+[ApiController]
+public class AuthenticationController : ControllerBase
+{
+    private readonly IConfiguration _configuration;
+
+    // we won't use this outside of this class, so we can scope it to this namespace
+    public class AuthenticationRequestBody
+    {
+        public string? UserName { get; set; }
+        public string? Password { get; set; }
+    }
+
+    private class CityInfoUser
+    {
+        public int UserId { get; set; }
+        public string UserName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string City { get; set; }
+
+        public CityInfoUser(
+            int userId, 
+            string userName, 
+            string firstName, 
+            string lastName, 
+            string city)
+        {
+            UserId = userId;
+            UserName = userName;
+            FirstName = firstName;
+            LastName = lastName;
+            City = city;
+        }
+    }
+
+    public AuthenticationController(IConfiguration configuration)
+    {
+        _configuration = configuration ?? 
+            throw new ArgumentNullException(nameof(configuration));
+    }
+
+    [HttpPost("authenticate")]
+    public ActionResult<string> Authenticate(
+        AuthenticationRequestBody authenticationRequestBody)
+    {  
+        // Step 1: validate the username/password
+        var user = ValidateUserCredentials(
+            authenticationRequestBody.UserName,
+            authenticationRequestBody.Password);
+
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        // Step 2: create a token
+        var securityKey = new SymmetricSecurityKey(
+            Convert.FromBase64String(_configuration["Authentication:SecretForKey"]));
+        var signingCredentials = new SigningCredentials(
+            securityKey, SecurityAlgorithms.HmacSha256);
+            
+        var claimsForToken = new List<Claim>();
+        claimsForToken.Add(new Claim("sub", user.UserId.ToString()));
+        claimsForToken.Add(new Claim("given_name", user.FirstName));
+        claimsForToken.Add(new Claim("family_name", user.LastName));
+        claimsForToken.Add(new Claim("city", user.City));
+            
+        var jwtSecurityToken = new JwtSecurityToken(
+            _configuration["Authentication:Issuer"],
+            _configuration["Authentication:Audience"],
+            claimsForToken,
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddHours(1),
+            signingCredentials);
+
+        var tokenToReturn = new JwtSecurityTokenHandler()
+            .WriteToken(jwtSecurityToken);
+
+        return Ok(tokenToReturn);
+    }
+
+    private CityInfoUser ValidateUserCredentials(string? userName, string? password)
+    {
+        // we don't have a user DB or table.  If you have, check the passed-through
+        // username/password against what's stored in the database.
+        //
+        // For demo purposes, we assume the credentials are valid
+
+        // return a new CityInfoUser (values would normally come from your user DB/table)
+        return new CityInfoUser(
+            1,
+            userName ?? "",
+            "Kevin",
+            "Dockx",
+            "Antwerp");
+
+    }
+}
+```
+Le credenziali di firma sono credenziali usate per firmare il token. Il token contiene informazioni su chi sia l'utente: le **claim**.
+
+La chiave in
+```cs
+//appsettings.Development.json
+"ConnectionStrings": {
+    "CityInfoDBConnectionString": "Data Source=CityInfo.db"
+  },
+  "Authentication": {
+    "SecretForKey": "i3DOjO5RGYnUibLEhUokFmeA38hj0sokMF7OjiiUJ0s=",
+    "Issuer": "https://localhost:7169",
+    "Audience": "cityinfoapi"  
+  }
+}
+```
+
+
+## [Demo: Requiring and Validating a Token](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/64eb2eda-8937-4921-b840-9d58d17931f2/06b6e87f-691e-47f0-9798-ddbdcfec815e)
+Per convalidare i token in arrivo ossiamo usare authentication.JwtBearer
+```cs
+//Program.cs
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new(){
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigninKey = true,
+            ValidIssuer = builder.Configuration["Authentication:Issuer"],
+            ValidAudience = builder.Configuration["Authentication:Audience"],
+            IssuerSigninKey = new SymmetricSecurityKey(
+                Convert.FromBase64String(builder.Configuration["Authentication:SecretForKey"])
+            )
+        }
+    })
+
+...
+
+app.UseAuthentication();
+```
+
+A tutti i controller va aggiunto:
+```cs
+[Authorize]
+```
+Tranne per l'AuthenticationController.cs
+
+## [Demo: Using Information from the Token in Your Controller](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/64eb2eda-8937-4921-b840-9d58d17931f2/22fa91f7-a94f-419d-943b-97777cb25831)
+Il Token da Postman va in Authorization -> Bearer
+
+
+ControllerBase ha un public ClaimsPrincipal User
+```cs
+//Controllers/PointsOfInterestController.cs
+[HttpGet]
+public async Task<ActionResult<IEnumerable<PointOfInterestDto>>> GetPointsOfInterest(
+    var citName = User.Claims.FirstOrDefault(c => c.Type == "city")?.Value;
+    if (!await _cityInfoRepository.CityExistsAsync(cityId))
+    {
+        _logger.LogInformation(
+            $"City with id {cityId} wasn't found when accessing points of interest.");
+        return NotFound();
+    }
+```
+
+La prima riga può essere definita in una funzione separata in CityInfoRepository.cs
+```cs
+public async Task<IEnumerable<City>> GetCitiesAsync()
+{
+    return await _context.Cities.OrderBy(c => c.Name).ToListAsync();
+}
+```
+
+Che diventa
+```cs
+//Controllers/PointsOfInterestController.cs
+var citName = User.Claims.FirstOrDefault(c => c.Type == "city")?.Value;
+if (!await _cityInfoRepository.CityNameMatchesCityId(cityName,cityId))
+    {
+        _logger.LogInformation(
+            $"City with id {cityId} wasn't found when accessing points of interest.");
+        return NotFound();
+    }
+    if (!await _cityInfoRepository.CityExistsAsync(cityId))
+    {
+        _logger.LogInformation(
+            $"City with id {cityId} wasn't found when accessing points of interest.");
+        return NotFound();
+    }
+```
+
+
+
+```cs
+//Program.cs
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("MustBeFromAntwerp", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("city", "Antwerp");
+    });
+});
+```
+
+```cs
+//PointsOfInterestController.cs
+[Authorize(Policy = "MustBeFromAntwerp")]
+```
+
+
+[Demo: Generating a Token with dotnet user-jwts](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/64eb2eda-8937-4921-b840-9d58d17931f2/5ab23f7e-67d3-4870-a6f6-8b9474d173dd)
+
+```console
+cotnet user-jwts create --help
 ```
 
 ```cs
