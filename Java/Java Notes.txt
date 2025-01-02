@@ -1,0 +1,149 @@
+Java Notes:
+
+BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+reader.readLine()
+int input = (Integer.parseInt(reader.readInt()));
+
+Integer.toString(i)
+
+ArrayList<String> list = new ArrayList<String>();
+for (int i = 0; i < 5; i++){
+	list.add(Integer.toString(i));
+}
+
+for (String element : strings){
+            if (element.length() < longest.length()){
+                longest = element;
+            }
+        }
+
+
+public static void main(String[] args)
+{
+    HashSet<String> set = new HashSet<String>();
+    set.add("Rain");
+    set.add("In");
+    set.add("Spain");
+
+   for (String text : set)
+    {
+        System.out.println(text);
+    }
+}
+
+
+public static void main(String[] args)
+{
+    // All elements are stored in pairs
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("first", "Rain");
+    map.put("second", "In");
+    map.put("third", "Spain");
+
+    Iterator<Map.Entry<String, String>> iterator = map.entrySet().iterator();
+
+   while (iterator.hasNext())
+    {
+        // Get a key-value pair
+        Map.Entry<String, String> pair = iterator.next();
+        String key = pair.getKey();            // Key
+        String value = pair.getValue();        // Value
+        System.out.println(key + ":" + value);
+    }
+}
+
+ITERATOR
+public static void main(String[] args)
+{
+    List<String> list = new ArrayList<String>();
+    list.add("Rain");
+    list.add("In");
+    list.add("Spain");
+
+    Iterator<String> iterator = list.iterator();// Get an iterator for the list
+
+    while (iterator.hasNext())      // Check if there is another element
+    {
+        // Get the current element and move to the next one
+        String text = iterator.next();
+
+        System.out.println(text);
+    }
+}
+public static void main(String[] args)
+{
+    Set<String> set = new HashSet<String>();
+    set.add("Rain");
+    set.add("In");
+    set.add("Spain");
+
+   for (String text : set)
+    {
+        System.out.println(text);
+    }
+}
+
+MAP ITERATOR
+public static void main(String[] args)
+{
+    // All elements are stored in pairs
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("first", "Rain");
+    map.put("second", "In");
+    map.put("third", "Spain");
+
+    Iterator<Map.Entry<String, String>> iterator = map.entrySet().iterator();
+
+   while (iterator.hasNext())
+    {
+        // Get a key-value pair
+        Map.Entry<String, String> pair = iterator.next();
+        String key = pair.getKey();            // Key
+        String value = pair.getValue();        // Value
+        System.out.println(key + ":" + value);
+    }
+}
+
+public static void main(String[] args)
+{
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("first", "Rain");
+    map.put("second", "In");
+    map.put("third", "Spain");
+
+    for (Map.Entry<String, String> pair : map.entrySet())
+    {
+        String key = pair.getKey();                      // Key
+        String value = pair.getValue();                  // Value
+        System.out.println(key + ":" + value);
+    }
+}
+
+
+DATE
+public static void main(String[] args) throws Exception
+{
+     Date today = new Date();
+     System.out.println("Current date: " + today);
+	Date currentTime = new Date();           // Get the current date and time
+    Thread.sleep(3000);                      // Wait 3 seconds (3000 milliseconds)
+    Date newTime = new Date();               // Get the new current time
+
+    long msDelay = newTime.getTime() - currentTime.getTime(); // Calculate the difference
+    System.out.println("Time difference is: " + msDelay + " in ms");
+	Date currentTime = new Date();
+
+	int hours = currentTime.getHours();
+    int mins = currentTime.getMinutes();
+    int secs = currentTime.getSeconds();
+
+    if(currentTime.after(today))// Check whether currentTime is after today
+    {
+        System.out.println("End time!");
+    }
+}
+
+
+
+Set<Cat> cats = createCats();
+cats.remove(cats.toArray()[0]);
