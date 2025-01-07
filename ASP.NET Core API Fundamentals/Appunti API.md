@@ -1517,8 +1517,111 @@ builder.Services.AddAuthorization(options =>
 
 [Demo: Generating a Token with dotnet user-jwts](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/64eb2eda-8937-4921-b840-9d58d17931f2/5ab23f7e-67d3-4870-a6f6-8b9474d173dd)
 
+Se nel codice metto questo:
+```cs
+[Authorize]
+```
+permetterò l'accesso a una funzione ai soli token
+
+Devo essere nella cartella `.API` del progetto
+
 ```console
-cotnet user-jwts create --help
+dotnet user-jwts create --help
+dotnet user-jwts create
+```
+
+[JSON web tokens](https://jwt.io/)
+
+ - "unique_name": "Event1" è una dichiarazione più "descrittiva" del nome o dell'identificativo dell'entità.
+ - "sub": "Event1" è l'identificatore univoco del soggetto del token, che identifica il "soggetto" principale in modo più formale.
+    - è tendenzialmente l'ID univoco dell'utente
+
+```console
+dotnet user-jwts create --issuer https://localhost:44310 --audience cityinfoapi
+```
+
+```console
+dotnet user-jwts key --issuer https://localhost:44310
+```
+
+
+Se nel codice metto questo:
+```cs
+[Authorize(Policy = "MustBeFromAntwerp")]
+```
+Inibirò l'accesso al solo claim "city=Antwerp"
+
+Quindi per generare il token:
+```console
+dotnet user-jwts key --issuer https://localhost:44310 --claim "city=Antwerp"
+```
+
+Per vedere tutti i token locali:
+```console
+dotnet user-jwts list
+dotnet user-jwts print 
+```
+
+## [Demo: Supporting Versioning](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/ead9cff7-1cb8-4d3b-af31-8db235a0cdbd/0f59f523-a92c-4339-a9f6-57b2ea21d11d) 
+
+Installa il pacchetto `Asp.versioning.mvc`
+
+```cs
+//Program.cs
+builder.Services.AddApiVersioning(
+    setupAction =>
+    {
+        setupAction.ReportApiVers ions = true;
+        setupAction.AssumeDefaultVersionWhenUnspecified = true;
+        setupAction.DefaultApiVersion = new ApiVersion(1, 0);
+    }
+).AddMvc();
+```
+
+E nei controller:
+```cs
+//CitiesController.cs
+[ApiVersion(0.1, Deprecated = false)]
+```
+
+E richiamando `?api-ersion=2` attraverso il link delle chiamate GET/POST/....
+Un'altra alternativa è usare `/api/v0.1/cities` con:
+```cs
+[Route("api/v{version:apiVersion}/cities")]
+```
+
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
 ```
 
 ```cs
