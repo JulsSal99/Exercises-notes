@@ -1420,9 +1420,117 @@ La chiave in
 }
 ```
 
+## Scrivere un controller di autenticazione.
+```cs
+//authenticationController.cs
+namespace CityInfo.API.Controllers
+{
+    [Route("api/authentication")]
+    [ApiController]
+    public class AuthenticationController : ControllerBase
+    {
+        private readonly IConfiguration _configuration;
+
+        // we won't use this outside of this class, so we can scope it to this namespace
+        public class AuthenticationRequestBody
+        {
+            public string? UserName { get; set; }
+            public string? Password { get; set; }
+        }
+
+        private class CityInfoUser
+        {
+            public int UserId { get; set; }
+            public string UserName { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string City { get; set; }
+
+            public CityInfoUser(
+                int userId, 
+                string userName, 
+                string firstName, 
+                string lastName, 
+                string city)
+            {
+                UserId = userId;
+                UserName = userName;
+                FirstName = firstName;
+                LastName = lastName;
+                City = city;
+            }
+
+        }
+
+        public AuthenticationController(IConfiguration configuration)
+        {
+            _configuration = configuration ?? 
+                throw new ArgumentNullException(nameof(configuration));
+        }
+
+        [HttpPost("authenticate")]
+        public ActionResult<string> Authenticate(
+            AuthenticationRequestBody authenticationRequestBody)
+        {  
+            // Step 1: validate the username/password
+            var user = ValidateUserCredentials(
+                authenticationRequestBody.UserName,
+                authenticationRequestBody.Password);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // Step 2: create a token
+            var securityKey = new SymmetricSecurityKey(
+                Convert.FromBase64String(_configuration["Authentication:SecretForKey"]));
+            var signingCredentials = new SigningCredentials(
+                securityKey, SecurityAlgorithms.HmacSha256);
+             
+            var claimsForToken = new List<Claim>();
+            claimsForToken.Add(new Claim("sub", user.UserId.ToString()));
+            claimsForToken.Add(new Claim("given_name", user.FirstName));
+            claimsForToken.Add(new Claim("family_name", user.LastName));
+            claimsForToken.Add(new Claim("city", user.City));
+             
+            var jwtSecurityToken = new JwtSecurityToken(
+                _configuration["Authentication:Issuer"],
+                _configuration["Authentication:Audience"],
+                claimsForToken,
+                DateTime.UtcNow,
+                DateTime.UtcNow.AddHours(1),
+                signingCredentials);
+
+            var tokenToReturn = new JwtSecurityTokenHandler()
+               .WriteToken(jwtSecurityToken);
+
+            return Ok(tokenToReturn);
+        }
+
+        private CityInfoUser ValidateUserCredentials(string? userName, string? password)
+        {
+            // we don't have a user DB or table.  If you have, check the passed-through
+            // username/password against what's stored in the database.
+            //
+            // For demo purposes, we assume the credentials are valid
+
+            // return a new CityInfoUser (values would normally come from your user DB/table)
+            return new CityInfoUser(
+                1,
+                userName ?? "",
+                "Kevin",
+                "Dockx",
+                "Antwerp");
+
+        }
+    }
+}
+```
+
 
 ## [Demo: Requiring and Validating a Token](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/64eb2eda-8937-4921-b840-9d58d17931f2/06b6e87f-691e-47f0-9798-ddbdcfec815e)
-Per convalidare i token in arrivo ossiamo usare authentication.JwtBearer
+Per convalidare i token in arrivo ossiamo usare il NuGet authentication.JwtBearer
 ```cs
 //Program.cs
 builder.Services.AddAuthentication("Bearer")
@@ -1517,8 +1625,281 @@ builder.Services.AddAuthorization(options =>
 
 [Demo: Generating a Token with dotnet user-jwts](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/64eb2eda-8937-4921-b840-9d58d17931f2/5ab23f7e-67d3-4870-a6f6-8b9474d173dd)
 
+Se nel codice metto questo:
+```cs
+[Authorize]
+```
+permetterò l'accesso a una funzione ai soli token
+
+Devo essere nella cartella `.API` del progetto
+
 ```console
-cotnet user-jwts create --help
+dotnet user-jwts create --help
+dotnet user-jwts create
+```
+
+[JSON web tokens](https://jwt.io/)
+
+ - "unique_name": "Event1" è una dichiarazione più "descrittiva" del nome o dell'identificativo dell'entità.
+ - "sub": "Event1" è l'identificatore univoco del soggetto del token, che identifica il "soggetto" principale in modo più formale.
+    - è tendenzialmente l'ID univoco dell'utente
+
+```console
+dotnet user-jwts create --issuer https://localhost:44310 --audience cityinfoapi
+```
+
+```console
+dotnet user-jwts key --issuer https://localhost:44310
+```
+
+
+Se nel codice metto questo:
+```cs
+[Authorize(Policy = "MustBeFromAntwerp")]
+```
+Inibirò l'accesso al solo claim "city=Antwerp"
+
+Quindi per generare il token:
+```console
+dotnet user-jwts key --issuer https://localhost:44310 --claim "city=Antwerp"
+```
+
+Per vedere tutti i token locali:
+```console
+dotnet user-jwts list
+dotnet user-jwts print 
+```
+
+## [Demo: Supporting Versioning](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/ead9cff7-1cb8-4d3b-af31-8db235a0cdbd/0f59f523-a92c-4339-a9f6-57b2ea21d11d) 
+
+Installa il pacchetto `Asp.versioning.mvc`
+
+```cs
+//Program.cs
+builder.Services.AddApiVersioning(
+    setupAction =>
+    {
+        setupAction.ReportApiVers ions = true;
+        setupAction.AssumeDefaultVersionWhenUnspecified = true;
+        setupAction.DefaultApiVersion = new ApiVersion(1, 0);
+    }
+).AddMvc();
+```
+
+E nei controller:
+```cs
+//CitiesController.cs
+[ApiVersion(0.1, Deprecated = false)]
+```
+
+E richiamando `?api-ersion=2` attraverso il link delle chiamate GET/POST/....
+Un'altra alternativa è usare `/api/v0.1/cities` con:
+```cs
+[Route("api/v{version:apiVersion}/cities")]
+```
+
+## [Demo: Incorporating XML Comments on Actions](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/ead9cff7-1cb8-4d3b-af31-8db235a0cdbd/9d84b1b9-a4e0-4bd7-8028-5a8c0a20299b)
+
+Sotto build -> Output -> Documentaton File, XML documentation file path 
+
+```cs
+//Program.cs
+builder.services.AddSwaggerGen(setupAction =>
+{
+    var xmlCommentsFile = $"{Assembly.GetExecutiongAssembly(),GetName().Name}.xml";
+    var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+
+    setupAction.includeXmlComments(xmlCommentsFullPath);
+})
+```
+
+```cs
+/// <summary>
+/// 
+/// </summary>
+/// <param name="cityid"></param>
+/// <returns></returns>
+[HttpGet]
+[ProduceResponseType(StatusCodes.Status404NotFound)]
+[ProduceResponseType(StatusCodes.Status400BadRequest)]
+[ProduceResponseType(StatusCodes.Status200Ok)]
+```
+
+## [Demo: Supporting Different Documentation Versions](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/ead9cff7-1cb8-4d3b-af31-8db235a0cdbd/3ee33d28-0770-4c76-92f8-8b051cc73409)
+Installa un nuovo NuGet: Asp.Versioning.Mvc.ApiExplorer
+
+```cs
+//Program.cs
+Builder.Serices.AddSingleton<FileExtensionContentTypeProvider>();
+
+[...]
+
+builder.Services.AddApiVersioning(
+    setupAction =>
+    {
+        setupAction.ReportApiVers ions = true;
+        setupAction.AssumeDefaultVersionWhenUnspecified = true;
+        setupAction.DefaultApiVersion = new ApiVersion(1, 0);
+    }
+).AddMvc()
+.AddApiExplorer(setupAction =>
+{
+    setupAction.substituteApiVersionInUrl = true;
+});
+
+var apiVersionDescriptionProvider = builder.Services.BuildServiceProvider()
+    .GetRequiredService<IApiVersionDescriptionProvider>();
+
+builder.services.AddSwaggerGen(setupAction =>
+{
+    foreach (var description in
+        apiVersionDescriptionProvider.ApiVersionDescriptions)
+        {
+            setupAction.SwaggerDoc(
+                $"{description.GroupName}",
+                new()
+                {
+                    Title = "City Info API",
+                    Version = description.ApiVersion.ToString(),
+                    Description = "Through this API you can access cities and their points."
+                }
+            )
+        }
+    var xmlCommentsFile = $"{Assembly.GetExecutiongAssembly(),GetName().Name}.xml";
+    var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+
+    setupAction.includeXmlComments(xmlCommentsFullPath);
+})
+```
+
+```cs
+if (app.Environment.IsDevelopment()){
+    app.UseSwagger();
+    app.UseSwaggerUI(setupAction =>
+    {
+        var descriptions = app.DescribeApiVersions();
+        foreach (var description in descriptions)
+        {
+            setupAction.SwaggerEndpoint(
+                $"/swagger/{description.GroupName}/swagger.json",
+                description.GroupName.ToUpperInvariant());
+            )
+        }
+    })
+}
+```
+
+[Demo: Adding Authentication Support to Your Documentation](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/ead9cff7-1cb8-4d3b-af31-8db235a0cdbd/aa75c0bc-a50d-4550-952c-2eec6830c37e)
+
+```cs
+builder.services.AddSwaggerGen(setupAction =>
+    
+    [...]
+
+    setupAction.AddSecurityDefinition("CityInfoApiBearerAuth", new()
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        Description = "Input a valid token to access this API"
+    });
+
+    setupAction.AddSecurityRequirement(new()
+    {
+        {
+            new(){
+                Reference = new OpenApiReference {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "CityInfoApiBearerAuth" }
+                },
+                new List<string>()
+            }
+        }
+    });
+})
+```
+
+## [Demo: Installing the HTTP_REPL](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/5b49c151-d639-48fe-acb3-0a8a6e91bd8b/75e48c48-6a44-4a14-a342-a2ad92e3bd84)
+
+
+```console
+dotnet tool install -g --prerelease microsoft.dotnet-httprepl
+dotnet tool list -g
+```
+
+
+## [Demo: Testing an API with the HTTP_REPL](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/5b49c151-d639-48fe-acb3-0a8a6e91bd8b/f653e81c-66d7-4da0-a127-d88a38355a99)
+
+```console
+httprepl https://localhost:7169
+connect https://localhost:7169
+```
+
+## [Demo: Testing with .http Files](https://app.pluralsight.com/ilx/video-courses/a18c29bd-8b02-4643-b2a1-15aebdc571f1/5b49c151-d639-48fe-acb3-0a8a6e91bd8b/504bdb81-cec2-46e5-9f5a-d8773c5f9afe)
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
+```
+
+```cs
 ```
 
 ```cs
