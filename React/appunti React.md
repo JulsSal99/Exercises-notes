@@ -1,4 +1,5 @@
-[text](https://react.dev/learn)
+[React course](https://react.dev/learn)
+[React online editor](https://codesandbox.io/p/sandbox/j67kkz)
 
 # Quick Start
 ## Creare e annidare componenti 
@@ -225,7 +226,6 @@ function MyButton({ count, onClick }) {
 ```
 
 # tic-tac-toe
-[React online editor](https://codesandbox.io/p/sandbox/j67kkz)
 
 ```jsx
 export default function Square() {
