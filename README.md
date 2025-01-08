@@ -6,7 +6,7 @@ All my programming notes across various languages
 - [C#](./C#) 
   - [https://learn.microsoft.com/en-us/collections/yz26f8y64n7k07](https://learn.microsoft.com/en-us/collections/yz26f8y64n7k07)
 - [MVC controller](./MVC%20controller)
-- [Minimal API](./Minimal%20API)
+  - [https://learn.microsoft.com/it-it/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-9.0&tabs=visual-studio](https://learn.microsoft.com/it-it/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-9.0&tabs=visual-studio)
 - [React](./React)
   - [https://react.dev/learn](https://react.dev/learn)
 - [Asp.Net Core Web App](./asp.net)
