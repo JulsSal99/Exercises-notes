@@ -292,8 +292,8 @@ export default function Board() {
 }
 
 ```
-squares.slice(); crea una porzione di array con gli stessi elementi e valori.
-Nota la nuova sintassi () =>. Qui, () => handleClick(0) è un’arrow function, che è un modo più breve per definire le funzioni. Quando si fa click sul quadrato, il codice dopo la => “freccia” verrà eseguito, chiamando handleClick(0).
+`squares.slice();` crea una porzione di array con gli stessi elementi e valori.
+`() => handleClick(0)` è un’arrow function, che è un modo più breve per definire le funzioni. Quando si fa click sul quadrato, il codice dopo la `=>` “freccia” verrà eseguito, chiamando handleClick(0).
 
 ```jsx
 import { useState } from "react";
