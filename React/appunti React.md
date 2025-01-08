@@ -548,7 +548,7 @@ function calculateWinner(squares) {
 ```
 
 # Pensare in React
-![s_thinking-in-react_ui_outline.png](/img/s_thinking-in-react_ui_outline.png)
+![s_thinking-in-react_ui_outline.png](/React/img/s_thinking-in-react_ui_outline.png)
 In questa schermata ci sono cinque componenti:
 1. *`FilterableProductTable` (grigio)* contiene l’intera app.
     1. *`SearchBar` (blu)* riceve l’input dell’utente.
