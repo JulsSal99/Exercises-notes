@@ -234,6 +234,8 @@ export default function Square() {
 ```
 La keyword di JavaScript `export` rende questa funzione accessibile dall'esterno di questo file. 
 La keyword `default` dice agli altri file che stanno usando il tuo codice che è la funzione principale nel tuo file.
+La keyword `StrictMode` è uno strumento che aiuta a rilevare potenziali problemi durante lo sviluppo, come componenti che usano funzionalità deprecate.
+L'uso di `createRoot` è il nuovo approccio per montare l'applicazione sul DOM.
 
 In Index.css
 
