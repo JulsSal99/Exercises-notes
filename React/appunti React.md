@@ -1,14 +1,5 @@
 [text](https://react.dev/learn)
 
-ALTER TABLE [dbo].[Curve] ADD CONSTRAINT UQ_Curve_Tickets UNIQUE ([IdGara], [CurvaN]);
-
-SELECT *
-FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-WHERE TABLE_NAME = 'Curve';
-
-ALTER TABLE Curve
-DROP CONSTRAINT UQ_Prezzi_ID_gara_ID_Curva;
-
 # Quick Start
 ## Creare e annidare componenti 
 I componenti React iniziano con la maiuscola
