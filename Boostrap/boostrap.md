@@ -178,3 +178,209 @@ Split Button Dropdowns:
   </ul>
 </div>
 ```
+
+## Glyphicons
+```html
+<button type="button" class="btn btn-default">
+  <span class="glyphicon glyphicon-search"></span> Search
+</button>
+```
+
+## Badges
+```html
+  <a href="#">News <span class="badge">5</span></a><br>
+```
+```html
+<ul class="list-group">
+  <li class="list-group-item">New <span class="badge">12</span></li>
+  <li class="list-group-item">Deleted <span class="badge">5</span></li>
+  <li class="list-group-item">Warnings <span class="badge">3</span></li>
+</ul>
+```
+
+## Progress bar
+```html
+<div class="container">
+  <div class="progress">
+    <div class="progress-bar progress-bar-striped active" role="progressbar"
+    aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:40%">
+      40%
+    </div>
+  </div>
+</div>
+```
+
+## Pagination
+```html
+<ul class="pagination">
+  <li><a href="#">1</a></li>
+  <li class="active"><a href="#">2</a></li>
+  <li><a href="#">3</a></li>
+  <li><a href="#">4</a></li>
+  <li><a href="#">5</a></li>
+</ul>
+```
+```html
+<ul class="pager">
+  <li class="previous"><a href="#">Previous</a></li>
+  <li class="next"><a href="#">Next</a></li>
+</ul>
+```
+
+## Breadcrumbs
+```html
+<ul class="breadcrumb">
+  <li><a href="#">Home</a></li>
+  <li><a href="#">Private</a></li>
+  <li><a href="#">Pictures</a></li>
+  <li class="active">Vacation</li>
+</ul>
+```
+
+## Panel
+```html
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">Panel with panel-default class</div>
+    <div class="panel-body">Panel Content</div>
+  </div>
+
+  <div class="panel panel-danger">
+    <div class="panel-heading">Panel with panel-danger class</div>
+    <div class="panel-body">Panel Content</div>
+  </div>
+</div>
+```
+
+## [Dropdowns](https://www.w3schools.com/bootstrap/bootstrap_dropdowns.asp)
+
+## Collapse
+```html
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">
+        Collapsible Group 1</a>
+      </h4>
+    </div>
+    <div id="collapse1" class="panel-collapse collapse in">
+      <div class="panel-body">Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+      sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+      minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+      commodo consequat.</div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">
+        Collapsible Group 2</a>
+      </h4>
+    </div>
+    <div id="collapse2" class="panel-collapse collapse">
+      <div class="panel-body">Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+      sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+      minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+      commodo consequat.</div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">
+        Collapsible Group 3</a>
+      </h4>
+    </div>
+    <div id="collapse3" class="panel-collapse collapse">
+      <div class="panel-body">Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+      sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+      minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+      commodo consequat.</div>
+    </div>
+  </div>
+</div>
+```
+
+## [Tabs e Pils](https://www.w3schools.com/bootstrap/bootstrap_tabs_pills.asp)
+
+## [Navigation bar](https://www.w3schools.com/bootstrap/bootstrap_navbar.asp)
+
+## [Form](https://www.w3schools.com/bootstrap/bootstrap_forms.asp)
+## [Form2](https://www.w3schools.com/bootstrap/bootstrap_forms_inputs2.asp)
+
+## [Textarea, Checkboxes and Buttons](https://www.w3schools.com/bootstrap/bootstrap_forms_inputs.asp)
+
+## [Media object](https://www.w3schools.com/bootstrap/bootstrap_media_objects.asp)
+
+## [Carousel](https://www.w3schools.com/bootstrap/bootstrap_carousel.asp)
+
+## [Modal](https://www.w3schools.com/bootstrap/bootstrap_modal.asp)
+```html
+<!-- Trigger the modal with a button -->
+<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Modal Header</h4>
+      </div>
+      <div class="modal-body">
+        <p>Some text in the modal.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+```
+
+## tooltip
+```html
+<a href="#" data-toggle="tooltip" data-placement="top" title="Hooray!">Hover</a>
+```
+
+## Popover
+```html
+<body>
+  <div class="container">
+    <h3>Popover Example</h3>
+    <p>Questo è un messaggio
+      <a href="#" title="Informazione:" data-toggle="popover" data-trigger="hover" data-content="Questo messaggio contiene un messaggio">ℹ️</a>
+    </p>
+  </div>
+
+  <script>
+    $(document).ready(function(){
+      $('[data-toggle="popover"]').popover();   
+    });
+  </script>
+</body>
+```
+
+## [Scrollspy](https://www.w3schools.com/bootstrap/bootstrap_scrollspy.asp)
+
+## [Boostrap Filters](https://www.w3schools.com/bootstrap/bootstrap_filters.asp)
+```html
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
+```
+
+## [The band](https://www.w3schools.com/bootstrap/bootstrap_theme_band.asp)
+
+## [Examples](https://www.w3schools.com/bootstrap/bootstrap_examples.asp)
