@@ -14,7 +14,7 @@ All my programming notes across various languages
 - [Entity Framework 8 Fundamentals](./Entity%20Framework%208%20Fundamentals)
   - [https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents](https://app.pluralsight.com/library/courses/ef-core-8-fundamentals/table-of-contents)  
     - [repository](https://github.com/JulieLerman/EFCore8Fundamentals)
-- [Building ASP.NET Core Minimal APIs](./Minimal%20API)
+- [Building ASP.NET Core Minimal APIs - Core 7](./Minimal%20API)
   - [https://app.pluralsight.com/library/courses/asp-dot-net-core-7-building-minimal-apis/table-of-contents](https://app.pluralsight.com/library/courses/asp-dot-net-core-7-building-minimal-apis/table-of-contents)
 - [ASP.NET Core Web API Fundamentals](./ASP.NET%20Core%20API%20Fundamentals)
   - [https://app.pluralsight.com/library/courses/asp-dot-net-core-6-web-api-fundamentals/table-of-contents](https://app.pluralsight.com/library/courses/asp-dot-net-core-6-web-api-fundamentals/table-of-contents)
