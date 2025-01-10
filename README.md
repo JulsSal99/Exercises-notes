@@ -20,5 +20,5 @@ All my programming notes across various languages
   - [https://app.pluralsight.com/library/courses/asp-dot-net-core-6-web-api-fundamentals/table-of-contents](https://app.pluralsight.com/library/courses/asp-dot-net-core-6-web-api-fundamentals/table-of-contents)
   - [github](https://github.com/kevindockx/aspnetcorewebapifundamentals)
 - [Boostrap](./Boostrap)
-  - [Boostrap](https://www.w3schools.com/bootstrap)
+  - [https://www.w3schools.com/bootstrap](https://www.w3schools.com/bootstrap)
 - [COBOL Repository](https://github.com/JulsSal99/COBOL-Esercizi)
