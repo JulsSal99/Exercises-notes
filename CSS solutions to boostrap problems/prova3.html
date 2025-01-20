@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabella Bootstrap</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .aspect-ratio-container {
+    position: relative;
+    width: 100%; /* La larghezza della cella della tabella */
+}
+
+.aspect-ratio-box {
+    position: absolute;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%; /* Questo forza l'aspect ratio 1:1 */
+}
+
+.aspect-ratio-box div {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+  </style>
+</head>
+<body>
+    <div class="row">
+    <div class="card-body text-center border-top-0 border-bottom-0">
+        <b class="text-center">@macchina.DesMacchina</b>
+    
+        <hr class="border-2 my-1 " />
+    
+        <div class="row">
+            <table class="col-6">
+                <tr class="text-center">
+                    <td class="small"><b>@macchina.NumeroOrdine</b></td>
+                </tr>
+                <tr>
+                    <td class="small" title="@macchina.DesArticolo"><b>Articolo</b></td>
+                </tr>
+            </table>
+    
+            <table class="col-6">
+                <tr>
+                    <td class="small"><b>@macchina.CodiceArticolo</b></td>
+                </tr>
+    
+                <tr class="text-center">
+                    <td class="small"><b>@macchina.Lega</b></td>
+                </tr>
+            </table>
+        </div>
+    
+        <hr class="border-2 my-1 " />
+    
+        <div class="row">
+            <table class="col-7">
+                <tr>
+                    <td class="small"><b>Q.ta stampate turno</b></td>
+                </tr>
+                <tr>
+                    <td class="small"><b>Q.ta tranciate turno</b></td>
+                </tr>
+            </table>
+            <table class="col-5">
+                <tr>
+                    <td><b class="card-text small">@macchina.QuantitaProdotta?.ToString("#0.###") /
+                            @macchina.QuantitaDaProdurre?.ToString("#0.###")</b></td>
+                </tr>
+                <tr>
+                    <td><b class="card-text small">@macchina.QuantitaTranciata?.ToString("#0.###") /
+                            @macchina.QuantitaDaProdurre?.ToString("#0.###")</b></td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr class="border-0">
+                        <td class="border-0"></td>
+                        <td rowspan="3" class="border-0">
+    
+                            <div>
+                                <b class="text-center small">Scarti: @macchina.Scarti?.ToString("#0.###")</b>
+                            </div>
+    
+                            <div>
+
+                                    <b class="card-text small">Efficienza: @macchina.Efficienza%</b>
+                            </div>
+    
+                        </td>
+                        <td class="border-0"></td>
+                    </tr>
+                    <tr class="border-0">
+                        <td class="border-0"></td>
+                        <td rowspan="2" class="border-1">
+                            <div>
+                                <b class="text-center small text-black">T. ciclo:</b>
+                            </div>
+                            <div>
+                                <b class="text-center small text-black"> @macchina.TempoCiclo </b>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="border-0">
+                        <td class="border-0"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    
+        <hr class="border-2 my-1" />
+            <b class="text-center mt-5">SOSTA INGIUSTIFICATA</b>
+    
+    </div>
+  </div>
+</div>
+  
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

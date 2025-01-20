@@ -14,16 +14,17 @@
     /* Definisci l'animazione */
     @keyframes lampeggio {
       0%, 100% {
-        background-color: rgb(249, 79, 6); /* Usa la variabile CSS per il colore */
+        background-color: rgb(255, 146, 36); /* Usa la variabile CSS per il colore */
       }
+      
       50% {
-        background-color: rgb(255, 206, 157); /* Senza colore (trasparente) */
+        background-color: rgb(255, 210, 160); /* Senza colore (trasparente) */
       }
     }
 
     /* Classe per l'elemento che lampeggia */
     .lampeggia {
-      animation: lampeggio 1s infinite step-start; /* 1 secondo per ogni ciclo, ripetuto all'infinito */
+      animation: lampeggio 1.2s  ease-in-out infinite; /* 1 secondo per ogni ciclo, ripetuto all'infinito */
       padding: 10px;
       color: black; /* Colore del testo (puoi modificarlo come preferisci) */
       text-align: center;
