@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elemento che Lampeggia con Colori Diversi</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+  .pagination {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .pagination a {
+    margin: 0 5px;
+    text-decoration: none;
+    color: black;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+  }
+
+  .pagination a:hover {
+    background-color: #ddd;
+  }
+
+  .pagination a {
+    display: none;
+  }
+
+  .pagination a.active {
+    display: block;
+    background-color: #4CAF50;
+    color: white;
+  }
+
+  .pagination a:not(.strarrow):has(+ .active), .pagination a:not(.strarrow):has(+a + .active){
+    display: block;
+  }
+
+  .pagination a.strarrow:not(:has(+ .active)){
+    display: block;
+  }
+
+  /*queste 3 funzionano per gli elementi dopo .active*/
+  .pagination a.active + a:not(.endarrow), .pagination a.active + a + a:not(.endarrow){
+    display: block;
+  }
+
+  .pagination a.endarrow {
+    display: block;
+  }
+
+  .pagination a.active + a.endarrow{
+    display: none;
+  }
+
+  </style>
+</head>
+<body>
+
+  <div class="pagination">
+    <a href="#" class="strarrow">&laquo;</a>
+    <a href="#">1</a>
+    <a href="#">2</a>
+    <a href="#">3</a>
+    <a href="#" class="active">4</a>
+    <a href="#">5</a>
+    <a href="#">6</a>
+    <a href="#" class="endarrow">&raquo;</a>
+  </div>
+  
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Selezioniamo tutti i link dentro l'elemento con classe .dictionary
+const links = document.querySelectorAll('.pagination a');
+
+// Aggiungiamo un event listener per il click su ciascun link
+links.forEach(link => {
+  link.addEventListener('click', function(event) {
+    // Rimuoviamo la classe .active da tutti i link
+    links.forEach(l => l.classList.remove('active'));
+
+    // Aggiungiamo la classe .active al link cliccato
+    link.classList.add('active');
+    
+    // Preveniamo il comportamento di default del link (se necessario)
+    event.preventDefault();
+  });
+});
+
+</script>
+</body>
+</html>

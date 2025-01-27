@@ -6,36 +6,39 @@
  *
  * @param {number} speed - Un valore che modifica la velocità dell'animazione. Il valore predefinito è 1.
  * @param {boolean} PlayHover - Booleano che, se true, interrompe l'animazione quando il cursore è sopra il div.
- * @param {number} pmarginBottom 
- * @param {boolean} consoleLog 
- * @param {boolean} enablePadding - abilita un padding che in realtà è un margin
  * 
  * La funzione deve essere chiamata dopo che il DOM è stato caricato per funzionare correttamente.
  */
-function adjustAnimationDuration(speed = 1, PlayHover = true, pmarginBottom = null, consoleLog = false, enablePadding = true) {
+function adjustAnimationDuration(speed = 1, PlayHover = true) {
+    document.querySelectorAll('.scrolling-text').forEach(el => {
+      // Verifica se l'elemento è un <td> e si trova dentro un <tr>
+      if (el.closest('td') || el.closest('tr')) {
+        const width = el.getBoundingClientRect().width;
+        // Impostiamo la larghezza senza il contenuto
+        el.style.width = `${width}px`;
+      }
+    });
+  
+
     let hover = "running";
     if (!PlayHover) {
       hover = "paused";
     }
-    let pmarginBottomText = "";
-    if (pmarginBottom != null) {
-      pmarginBottomText = "margin-bottom: " + pmarginBottom.toString() + "px;";
-    }
     const css = `
       .scrolling-text {
         white-space: nowrap; 
-        overflow: hidden;
+        overflow-x: hidden; 
+        display: block;
       }
-      .scrolling-text :first-child {
+      .scrolling-text p {
+        display: inline-block;
         animation: scroll linear infinite;
         /*animation: scroll cubic-bezier(0.1, 0, 0.9, 1) infinite;*/
         /*animation-delay: 1s;*/
-        animation-play-state: running; /* default */
-        ${pmarginBottomText}
       }
-      .scrolling-text :first-child:hover {
-		    animation-play-state: ${hover};
-	    }
+      .scrolling-text:hover>p {
+        animation-play-state: ${hover};
+      }
       @keyframes scroll {
         from {
           transform: translateX(0px);
@@ -51,57 +54,30 @@ function adjustAnimationDuration(speed = 1, PlayHover = true, pmarginBottom = nu
     speed = 0.1 / speed;
     // speed = 10 / speed;
 
-    document.querySelectorAll('.scrolling-text *').forEach((p, index) => {
-        if (p.children.length > 0) { // Salta l'iterazione se ci sono figli
-          return; 
-        }
+    document.querySelectorAll('.scrolling-text p').forEach((p, index) => {
         p.id = 'p-' + index;
         const parent = p.parentElement; // Ottieni il padre dell'elemento <p>
-        const originalText = p.innerHTML;
-        p.innerHTML = '';  // Rimuovi il testo
-        let parentWidth = parent.offsetWidth; // Larghezza del contenitore (padre) senza testo
-
-        let parentPaddingLeft = 0;
-        let parentPaddingRight = 0;
-        const parentStyle = window.getComputedStyle(parent); //gestisce eventuali padding sul padre
-        if (enablePadding){
-          parentPaddingLeft = parseFloat(parentStyle.paddingLeft);
-          parentPaddingRight = parseFloat(parentStyle.paddingRight);
-          parentWidth = parent.offsetWidth - parentPaddingLeft - parentPaddingRight;
-        }
-
-        p.innerHTML = originalText; // Ripristina il testo nel <p>
-
-        // const parentWidth = parent.offsetWidth; // Larghezza del contenitore (padre)
-        let textWidth = p.scrollWidth; // Larghezza del testo (contenuto del <p>)
-        if (textWidth === 0) {
-            p.style.display = 'inline-block';
-            textWidth = p.scrollWidth;
-        }
+        const textLength = p.textContent.length;
+        const parentWidth = parent.offsetWidth; // Larghezza del contenitore (padre)
+        console.log("parentWidth: ", parentWidth);
+        const textWidth = p.scrollWidth; // Larghezza del testo (contenuto del <p>)
+        console.log("textWidth: ", textWidth);
 
         if (textWidth > parentWidth) {
-            let duration = (parentWidth+textWidth) * speed / 5; // Dura almeno 5 secondi, con un incremento in base alla lunghezza
+            let duration = Math.pow(textLength, 0.7) * speed * 5; // Dura almeno 5 secondi, con un incremento in base alla lunghezza
             // let duration = (textWidth / parentWidth) * speed; 
             // p.style.animationDuration = `${duration}s`;
           // Modifica il valore di "from" dell'animazione in base alla larghezza del contenitore
           const keyframes = `
           #p-${index} {
             animation: scroll-p-${index} ${duration}s linear infinite;
-            width: ${parentWidth-2}px;
-          }
-
-          td:has(*#p-${index}) {
-            width: ${parentWidth - 2}px !important;
-            display: block;
-            margin-left: ${parentPaddingLeft}px;
-            margin-right: ${parentPaddingRight}px;
           }
           @keyframes scroll-p-${index} {
               from {
                   transform: translateX(${parentWidth}px);
               }
               to {
-                  transform: translateX(-${textWidth}px);
+                  transform: translateX(-100%);
               }
           }
           `;
@@ -110,10 +86,6 @@ function adjustAnimationDuration(speed = 1, PlayHover = true, pmarginBottom = nu
           document.head.appendChild(dynamicStyle);
         } else {
             p.style.animation = 'none'; // Se il testo non è più lungo del padre, disabilita l'animazione
-        }
-        if (consoleLog){
-          console.log("text: ", p.textContent, "\nparentWidth: ", parentWidth, ".   textWidth: ", textWidth);
-          console.log("parentWidth:", parentWidth, parentPaddingLeft, parentPaddingRight)
         }
     });
 }
