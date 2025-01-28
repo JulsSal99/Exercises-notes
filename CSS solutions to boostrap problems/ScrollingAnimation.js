@@ -12,7 +12,7 @@
  * 
  * La funzione deve essere chiamata dopo che il DOM è stato caricato per funzionare correttamente.
  */
-function adjustAnimationDuration(speed = 1, PlayHover = true, pmarginBottom = null, consoleLog = false, enablePadding = true) {
+function adjustAnimationDuration(speed = 1, PlayHover = true, pmarginBottom = null, consoleLog = false, enablePadding = true, startPause = 2) {
     let hover = "running";
     if (!PlayHover) {
       hover = "paused";
@@ -80,31 +80,54 @@ function adjustAnimationDuration(speed = 1, PlayHover = true, pmarginBottom = nu
         }
 
         if (textWidth > parentWidth) {
-            let duration = (parentWidth+textWidth) * speed / 5; // Dura almeno 5 secondi, con un incremento in base alla lunghezza
-            // let duration = (textWidth / parentWidth) * speed; 
-            // p.style.animationDuration = `${duration}s`;
-          // Modifica il valore di "from" dell'animazione in base alla larghezza del contenitore
-          const keyframes = `
-          #p-${index} {
-            animation: scroll-p-${index} ${duration}s linear infinite;
-            width: ${parentWidth-2}px;
-          }
+          let duration = (parentWidth+textWidth) * speed / 5; // Dura almeno 5 secondi, con un incremento in base alla lunghezza
+          const remparentWidth = parentWidth / 16; //converte a REM
+          let keyframes = `
+            #p-${index} {
+              animation: scroll-p-${index} ${duration}s linear infinite;
+              width: ${remparentWidth - 0.125}rem;
+            }
 
-          td:has(*#p-${index}) {
-            width: ${parentWidth - 2}px !important;
-            display: block;
-            margin-left: ${parentPaddingLeft}px;
-            margin-right: ${parentPaddingRight}px;
+            td:has(*#p-${index}) {
+              width: ${remparentWidth - 0.250}rem !important;
+              display: block;
+              margin-left: ${parentPaddingLeft}px;
+              margin-right: ${parentPaddingRight}px;
+            }`
+
+          if (startPause != 0){
+            const totalWidth = textWidth + parentPaddingLeft + parentPaddingRight;
+            const timeAtZero = (parentWidth / (parentWidth + totalWidth)) * duration;  // Quando il testo arriva su 0
+            const timeAtZeroPercentage = (timeAtZero / duration) * 100;  // Calcola la percentuale di tempo per il 0%
+            const pausePercentage = (startPause / duration) * 100;  // Calcolare la pausa in percentuale della durata totale
+            const pauseEndPercentage = timeAtZeroPercentage + pausePercentage;  // La fine della pausa
+            keyframes += `
+            @keyframes scroll-p-${index} {
+                0% {
+                    transform: translateX(${parentWidth}px);
+                }
+                ${timeAtZeroPercentage}% {
+                    transform: translateX(${-parentPaddingLeft}px);
+                }
+                ${pauseEndPercentage}% {
+                    transform: translateX(${-parentPaddingLeft}px);
+                }
+                100% {
+                    transform: translateX(-${textWidth+parentPaddingLeft}px);
+                }
+            }`;
+          } else {
+            keyframes += `
+            @keyframes scroll-p-${index} {
+                from {
+                    transform: translateX(${parentWidth}px);
+                }
+                to {
+                    transform: translateX(-${textWidth+parentPaddingLeft}px);
+                }
+            }
+            `;
           }
-          @keyframes scroll-p-${index} {
-              from {
-                  transform: translateX(${parentWidth}px);
-              }
-              to {
-                  transform: translateX(-${textWidth}px);
-              }
-          }
-          `;
           const dynamicStyle = document.createElement('style');
           dynamicStyle.innerHTML = keyframes;
           document.head.appendChild(dynamicStyle);
