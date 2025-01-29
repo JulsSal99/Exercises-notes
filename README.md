@@ -9,6 +9,7 @@ All my programming notes across various languages
   - [https://learn.microsoft.com/it-it/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-9.0&tabs=visual-studio](https://learn.microsoft.com/it-it/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-9.0&tabs=visual-studio)
 - [React](./React)
   - [https://react.dev/learn](https://react.dev/learn)
+  - [Using Hooks in React 18](https://app.pluralsight.com/library/courses/react-18-using-hooks/table-of-contents)
 - [Asp.Net Core Web App](./asp.net)
   - [https://learn.microsoft.com/en-us/training/paths/aspnet-core-web-app/](https://learn.microsoft.com/en-us/training/paths/aspnet-core-web-app/)
 - [Entity Framework 8 Fundamentals](./Entity%20Framework%208%20Fundamentals)
